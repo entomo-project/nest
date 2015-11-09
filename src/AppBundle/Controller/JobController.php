@@ -2,36 +2,55 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Manager\JobManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 class JobController extends Controller
 {
     public function retrieveAction()
     {
-        return new \Symfony\Component\HttpFoundation\JsonResponse(
+        return new JsonResponse(
             [
                 'status' => 'success',
             ]
         );
     }
 
-    public function createAction()
+    /**
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function createAction(Request $request)
     {
-        
+        $job = $request->request->get('name');
+        $parameters = $request->request->get('parameters');
 
-        return new \Symfony\Component\HttpFoundation\JsonResponse(
-            [
-                'status' => 'success',
-            ]
-        );
+        $result = $this->getJobManager()->createJob($job, $parameters);
+
+        if (isset($result['result']['id'])) {
+            $result['result']['id'] = (string)$result['result']['id'];
+        }
+
+        return new JsonResponse($result);
     }
 
     public function abortAction()
     {
-        return new \Symfony\Component\HttpFoundation\JsonResponse(
+        return new JsonResponse(
             [
                 'status' => 'success',
             ]
         );
+    }
+
+    /**
+     * @return JobManager
+     */
+    protected function getJobManager()
+    {
+        return $this->get('app.manager.job');
     }
 }

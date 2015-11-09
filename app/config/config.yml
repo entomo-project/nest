@@ -18,7 +18,6 @@ framework:
     form:            ~
     csrf_protection: ~
     validation:      { enable_annotations: true }
-    #serializer:      { enable_annotations: true }
     templating:
         engines: ['twig']
         #assets_version: SomeVersionScheme
@@ -30,6 +29,8 @@ framework:
         handler_id:  ~
     fragments:       ~
     http_method_override: true
+    serializer:
+        enabled: true
 
 # Twig Configuration
 twig:
@@ -87,4 +88,7 @@ doctrine_mongodb:
     default_database: %mongodb_database%
     document_managers:
         default:
-            auto_mapping: true
+            mappings:
+                AppBundle:
+                    type: yml
+                    dir: ../../app/Resources/config/doctrine

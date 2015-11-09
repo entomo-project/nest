@@ -1,0 +1,11 @@
+AppBundle\Document\Job:
+    repositoryClass: AppBundle\Document\Repository\JobRepository
+    fields:
+        id:
+            id:  true
+        job:
+            type: string
+        state:
+            type: string
+        parameters:
+            type: raw
