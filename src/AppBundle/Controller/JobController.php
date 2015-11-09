@@ -9,13 +9,15 @@ use Symfony\Component\HttpFoundation\Request;
 
 class JobController extends Controller
 {
-    public function retrieveAction()
+    public function retrieveAction($id)
     {
-        return new JsonResponse(
-            [
-                'status' => 'success',
-            ]
-        );
+        $result = $this->getJobManager()->retrieveJob($id);
+
+        if ($result['status'] === 'not_found') {
+            return new JsonResponse($result, JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        return new JsonResponse($result);
     }
 
     /**

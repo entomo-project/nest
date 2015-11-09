@@ -7,6 +7,18 @@ use AppBundle\Document\JobStatus;
 class JobRepository extends AbstractBaseDocumentRepository
 {
     /**
+     * @param string $id
+     */
+    public function findOneNoHydrate($id)
+    {
+        return $this->collection->findOne(
+            [
+                '_id' => new \MongoId($id),
+            ]
+        );
+    }
+
+    /**
      * @param string $name
      * @param array $parameters
      *

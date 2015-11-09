@@ -8,6 +8,37 @@ use Doctrine\MongoDB\Collection;
 
 class JobControllerTest extends AbstractBaseFunctionalTest
 {
+    public function testRetrieveAction()
+    {
+        $job = [
+            'name' => 'test',
+            'parameters' => [],
+            'status' => JobStatus::JOB_STATUS_NEW,
+        ];
+
+        $this->getJobCollection()->insert($job);
+
+        $this->jsonRequest(
+            'GET',
+            '/api/v1/job/'.(string)$job['_id']
+        );
+
+        $this->assertResponseHttpOk();
+
+        $jsonResponse = $this->getJsonResponse();
+
+        $this->assertArrayHasKey('result', $jsonResponse);
+
+        $jsonResponseId = $jsonResponse['result']['id'];
+        $jobId = $job['_id'];
+
+        $this->assertSame($jsonResponseId, (string)$jobId);
+
+        unset($jsonResponse['result']['id'], $job['_id']);
+
+        $this->assertSame($jsonResponse['result'], $job);
+    }
+
     public function testCreateAction()
     {
         $this->jsonRequest(

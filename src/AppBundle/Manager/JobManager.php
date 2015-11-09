@@ -20,6 +20,29 @@ class JobManager
     }
 
     /**
+     * @param string $id
+     */
+    public function retrieveJob($id)
+    {
+        $result = $this->jobRepository->findOneNoHydrate($id);
+
+        if ($result === null) {
+            return [
+                'status' => 'not_found',
+            ];
+        }
+
+        $result['id'] = (string)$result['_id'];
+
+        unset($result['_id']);
+
+        return [
+            'status' => 'success',
+            'result' => $result,
+        ];
+    }
+
+    /**
      * @param string $name
      * @param array $parameters
      *
