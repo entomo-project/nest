@@ -3,5 +3,6 @@ AppBundle\Document\JobDescription:
     fields:
         id:
             id:  true
+            type:  string
         requirements:
             type: collection

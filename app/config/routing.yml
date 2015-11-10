@@ -1,11 +1,35 @@
+app_job_create:
+    path:   /api/v1/job
+    methods: [POST]
+    defaults:
+        _controller: AppBundle:Job:create
+
 app_job_retrieve:
     path:   /api/v1/job/{id}
     methods: [GET]
     defaults:
         _controller: AppBundle:Job:retrieve
 
-app_job_create:
-    path:   /api/v1/job
+app_job_description_create:
+    path:   /api/v1/job-description
     methods: [POST]
     defaults:
-        _controller: AppBundle:Job:create
+        _controller: AppBundle:JobDescription:create
+
+app_job_description_retrieve:
+    path:   /api/v1/job-description/{id}
+    methods: [GET]
+    defaults:
+        _controller: AppBundle:JobDescription:retrieve
+
+app_job_description_update:
+    path:   /api/v1/job-description/{id}
+    methods: [PUT]
+    defaults:
+        _controller: AppBundle:JobDescription:update
+
+app_job_description_delete:
+    path:   /api/v1/job-description/{id}
+    methods: [DELETE]
+    defaults:
+        _controller: AppBundle:JobDescription:delete
