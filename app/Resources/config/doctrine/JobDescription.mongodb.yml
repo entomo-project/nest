@@ -1,0 +1,7 @@
+AppBundle\Document\JobDescription:
+    repositoryClass: AppBundle\Document\Repository\JobDescriptionRepository
+    fields:
+        id:
+            id:  true
+        requirements:
+            type: collection
