@@ -52,4 +52,25 @@ class JobDescriptionManager
     {
         return $this->jobDescriptionRepository->createJobDescription($id, $requirements);
     }
+
+    /**
+     * @param string $id
+     *
+     * @return array
+     */
+    public function deleteJobDescription($id)
+    {
+        return $this->jobDescriptionRepository->deleteJobDescription($id);
+    }
+
+    /**
+     * @param string $id
+     * @param array $requirements
+     *
+     * @return array
+     */
+    public function updateJobDescription($id, array $requirements)
+    {
+        return $this->jobDescriptionRepository->updateJobDescription($id, $requirements);
+    }
 }

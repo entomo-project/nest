@@ -7,15 +7,91 @@ use Doctrine\MongoDB\Collection;
 
 class JobDescriptionControllerTest extends AbstractBaseFunctionalTest
 {
-//    public function testUpdateAction()
-//    {
-//
-//    }
-//
-//    public function testDeleteAction()
-//    {
-//
-//    }
+    public function testUpdateAction()
+    {
+        $jobDescription = [
+            '_id' => 'foobar',
+            'requirements' => [
+                'test',
+            ],
+        ];
+
+        $this->getJobDescriptionCollection()->insert($jobDescription);
+
+        $this->jsonRequest(
+            'PUT',
+            '/api/v1/job-description/foobar',
+            [
+                'data' => [
+                    'requirements' => [
+                        'test',
+                        '42',
+                    ],
+                ],
+            ]
+        );
+
+        $this->assertResponseHttpOk();
+
+        $jsonResponse = $this->getJsonResponse();
+
+        $this->assertSame(
+            [
+                'status' => 'success',
+            ],
+            $jsonResponse
+        );
+
+        $it = $this->getJobDescriptionCollection()->find();
+
+        $result = array_values(iterator_to_array($it));
+
+        $this->assertCount(1, $result);
+
+        $this->assertSame(
+            [
+                '_id' => 'foobar',
+                'requirements' => [
+                    'test',
+                    '42',
+                ],
+            ],
+            $result[0]
+        );
+    }
+
+    public function testDeleteAction()
+    {
+        $jobDescription = [
+            '_id' => 'foobar',
+            'requirements' => [
+                'test',
+            ],
+        ];
+
+        $this->getJobDescriptionCollection()->insert($jobDescription);
+
+        $this->jsonRequest(
+            'DELETE',
+            '/api/v1/job-description/foobar'
+        );
+
+        $this->assertResponseHttpOk();
+
+        $jsonResponse = $this->getJsonResponse();
+
+        $this->assertSame(
+            [
+                'status' => 'success',
+            ],
+            $jsonResponse
+        );
+
+        $this->assertSame(
+            0,
+            $this->getJobDescriptionCollection()->count()
+        );
+    }
 
     public function testRetrieveAction()
     {

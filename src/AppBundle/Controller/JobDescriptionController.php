@@ -25,6 +25,22 @@ class JobDescriptionController extends Controller
         return new JsonResponse($result);
     }
 
+    public function updateAction($id, Request $request)
+    {
+        $data = $request->request->get('data');
+
+        $result = $this->getJobDescriptionManager()->updateJobDescription($id, $data['requirements']);
+
+        return new JsonResponse($result);
+    }
+
+    public function deleteAction($id)
+    {
+        $result = $this->getJobDescriptionManager()->deleteJobDescription($id);
+
+        return new JsonResponse($result);
+    }
+
     /**
      * @return JobDescriptionManager
      */
