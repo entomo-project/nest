@@ -1,0 +1,6 @@
+AppBundle\Document\Worker:
+    repositoryClass: AppBundle\Document\Repository\WorkerRepository
+    fields:
+        ip:
+            id:  true
+            type: string

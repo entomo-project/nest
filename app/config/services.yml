@@ -1,4 +1,8 @@
 services:
+    app.manager.worker:
+        class: AppBundle\Manager\WorkerManager
+        arguments:
+            - @app.document.repository.worker
     app.manager.job:
         class: AppBundle\Manager\JobManager
         arguments:

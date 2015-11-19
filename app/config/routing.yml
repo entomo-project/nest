@@ -1,3 +1,15 @@
+app_worker_register:
+    path:   /api/v1/worker/{ip}
+    methods: [POST]
+    defaults:
+        _controller: AppBundle:Worker:register
+
+app_worker_unregister:
+    path:   /api/v1/worker/{ip}
+    methods: [DELETE]
+    defaults:
+        _controller: AppBundle:Worker:unregister
+
 app_job_create:
     path:   /api/v1/job
     methods: [POST]
