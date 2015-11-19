@@ -3,6 +3,7 @@
 namespace AppBundle\Tests\Functional\Controller;
 
 use AppBundle\Tests\Functional\AbstractBaseFunctionalTest;
+use Doctrine\MongoDB\Collection;
 
 class WorkerControllerTest extends AbstractBaseFunctionalTest
 {
@@ -97,7 +98,7 @@ class WorkerControllerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return \Doctrine\MongoDB\Collection
+     * @return Collection
      */
     protected function getWorkerCollection()
     {
@@ -105,7 +106,7 @@ class WorkerControllerTest extends AbstractBaseFunctionalTest
     }
 
     /**
-     * @return \Doctrine\MongoDB\Collection
+     * @return Collection
      */
     protected function getJobCollection()
     {
