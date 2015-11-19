@@ -4,7 +4,7 @@
     "type": "project",
     "description": "",
     "autoload": {
-        "psr-4": { "": "src/" }
+        "psr-4": { "AppBundle\\": "src/" }
     },
     "require": {
         "php": ">=5.3.9",

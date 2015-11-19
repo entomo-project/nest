@@ -91,4 +91,4 @@ doctrine_mongodb:
             mappings:
                 AppBundle:
                     type: yml
-                    dir: ../../app/Resources/config/doctrine
+                    dir: ../app/Resources/config/doctrine
