@@ -43,13 +43,20 @@ class JobManager
     }
 
     /**
+     * @param bool $sync
      * @param string $name
      * @param array $parameters
      *
      * @return array
      */
-    public function createJob($name, array $parameters)
+    public function createJob($sync, $name, array $parameters)
     {
-        return $this->jobRepository->createJob($name, $parameters);
+        $createJobresult = $this->jobRepository->createJob($name, $parameters);
+
+        if ($sync) {
+            
+        }
+
+        return $createJobresult;
     }
 }
