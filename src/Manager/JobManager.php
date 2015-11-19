@@ -2,6 +2,7 @@
 
 namespace AppBundle\Manager;
 
+use AppBundle\Document\JobStatus;
 use AppBundle\Document\Repository\JobRepository;
 use AppBundle\Transport\JobTransportInterface;
 
@@ -72,7 +73,13 @@ class JobManager
         );
 
         if ($result['status'] === 'success') {
-            
+            $this->jobRepository->updateJob(
+                $jobId,
+                [
+                    'result' => $result['result'],
+                    'status' => JobStatus::JOB_STATUS_DONE,
+                ]
+            );
         }
     }
 

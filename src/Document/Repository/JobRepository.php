@@ -64,4 +64,26 @@ class JobRepository extends AbstractBaseDocumentRepository
             ],
         ];
     }
+
+    public function updateJob($jobId, $update)
+    {
+        $result = $this->collection->update(
+            [
+                '_id' => new \MongoId($jobId),
+            ],
+            [
+                '$set' => $update,
+            ]
+        );
+
+        if (!isset($result['ok']) || !$result['ok']) {
+            return [
+                'status' => 'error',
+            ];
+        }
+
+        return [
+            'status' => 'success',
+        ];
+    }
 }

@@ -98,6 +98,13 @@ class JobControllerTest extends AbstractBaseFunctionalTest
                 ],
                 $jobParameters
             );
+
+            return [
+                'status' => 'success',
+                'result' => [
+                    'bazquz',
+                ],
+            ];
         }));
 
         $this->container->set('app.transport.job', $jobTransportStub);
@@ -145,7 +152,13 @@ class JobControllerTest extends AbstractBaseFunctionalTest
             ],
             $result[0]['parameters']
         );
-        $this->assertSame(JobStatus::JOB_STATUS_NEW, $result[0]['status']);
+        $this->assertSame(
+            [
+                'bazquz',
+            ],
+            $result[0]['result']
+        );
+        $this->assertSame(JobStatus::JOB_STATUS_DONE, $result[0]['status']);
     }
 
     /**

@@ -13,4 +13,6 @@ class Job
     protected $status;
 
     protected $onWorker;
+
+    protected $result;
 }
