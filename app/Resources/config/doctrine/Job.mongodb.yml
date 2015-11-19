@@ -5,7 +5,7 @@ AppBundle\Document\Job:
             id:  true
         job:
             type: string
-        state:
+        status:
             type: string
         parameters:
             type: raw

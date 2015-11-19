@@ -10,5 +10,7 @@ class Job
 
     protected $parameters;
 
-    protected $state;
+    protected $status;
+
+    protected $onWorker;
 }
