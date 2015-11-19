@@ -12,11 +12,20 @@ class JobManager
     protected $jobRepository;
 
     /**
-     * @param JobRepository $jobRepository
+     * @var WorkerManager
      */
-    public function __construct(JobRepository $jobRepository)
-    {
+    protected $workerManager;
+
+    /**
+     * @param JobRepository $jobRepository
+     * @param WorkerManager $workerManager
+     */
+    public function __construct(
+        JobRepository $jobRepository,
+        WorkerManager $workerManager
+    ) {
         $this->jobRepository = $jobRepository;
+        $this->workerManager = $workerManager;
     }
 
     /**
@@ -42,6 +51,13 @@ class JobManager
         ];
     }
 
+    public function submitJob($jobId)
+    {
+        $worker = $this->workerManager->getIdleWorker();
+
+        var_dump($worker);
+    }
+
     /**
      * @param bool $sync
      * @param string $name
@@ -51,12 +67,12 @@ class JobManager
      */
     public function createJob($sync, $name, array $parameters)
     {
-        $createJobresult = $this->jobRepository->createJob($name, $parameters);
+        $createJobResult = $this->jobRepository->createJob($name, $parameters);
 
         if ($sync) {
-            
+            $this->submitJob($createJobResult['result']['id']);
         }
 
-        return $createJobresult;
+        return $createJobResult;
     }
 }

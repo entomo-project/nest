@@ -6,6 +6,8 @@ class WorkerRepository extends AbstractBaseDocumentRepository
 {
     /**
      * @param string $id
+     *
+     * @return array
      */
     public function findOneNoHydrate($id)
     {
@@ -14,6 +16,14 @@ class WorkerRepository extends AbstractBaseDocumentRepository
                 '_id' => new \MongoId($id),
             ]
         );
+    }
+
+    /**
+     * @return array
+     */
+    public function findIdleNoHydrate()
+    {
+        return $this->collection->findOne();
     }
 
     /**

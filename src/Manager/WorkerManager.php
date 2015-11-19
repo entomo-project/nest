@@ -4,6 +4,7 @@ namespace AppBundle\Manager;
 
 use AppBundle\Document\Repository\JobRepository;
 use AppBundle\Document\Repository\WorkerRepository;
+use AppBundle\Document\Worker;
 
 class WorkerManager
 {
@@ -41,5 +42,15 @@ class WorkerManager
         $this->jobRepository->unassignWorkerJobs($ip);
 
         return $this->workerRepository->unregisterWorker($ip);
+    }
+
+    /**
+     * @todo handle idling identification
+     *
+     * @return Worker
+     */
+    public function getIdleWorker()
+    {
+        return $this->workerRepository->findIdleNoHydrate();
     }
 }
