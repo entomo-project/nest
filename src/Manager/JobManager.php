@@ -3,6 +3,7 @@
 namespace AppBundle\Manager;
 
 use AppBundle\Document\Repository\JobRepository;
+use AppBundle\Transport\JobTransportInterface;
 
 class JobManager
 {
@@ -17,15 +18,23 @@ class JobManager
     protected $workerManager;
 
     /**
+     * @var JobTransportInterface
+     */
+    protected $jobTransport;
+
+    /**
      * @param JobRepository $jobRepository
      * @param WorkerManager $workerManager
+     * @param JobTransportInterface $jobTransport
      */
     public function __construct(
         JobRepository $jobRepository,
-        WorkerManager $workerManager
+        WorkerManager $workerManager,
+        JobTransportInterface $jobTransport
     ) {
         $this->jobRepository = $jobRepository;
         $this->workerManager = $workerManager;
+        $this->jobTransport = $jobTransport;
     }
 
     /**
@@ -51,11 +60,20 @@ class JobManager
         ];
     }
 
-    public function submitJob($jobId)
+    public function submitJob($jobId, $jobName, array $jobParameters)
     {
         $worker = $this->workerManager->getIdleWorker();
 
-        var_dump($worker);
+        $result = $this->jobTransport->submitJobToWorker(
+            $worker['ip'],
+            $jobId,
+            $jobName,
+            $jobParameters
+        );
+
+        if ($result['status'] === 'success') {
+            
+        }
     }
 
     /**
@@ -70,7 +88,11 @@ class JobManager
         $createJobResult = $this->jobRepository->createJob($name, $parameters);
 
         if ($sync) {
-            $this->submitJob($createJobResult['result']['id']);
+            $this->submitJob(
+                $createJobResult['result']['id'],
+                $name,
+                $parameters
+            );
         }
 
         return $createJobResult;

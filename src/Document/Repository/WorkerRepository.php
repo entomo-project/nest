@@ -23,7 +23,17 @@ class WorkerRepository extends AbstractBaseDocumentRepository
      */
     public function findIdleNoHydrate()
     {
-        return $this->collection->findOne();
+        $worker = $this->collection->findOne();
+
+        if ($worker === null) {
+            return;
+        }
+
+        $worker['ip'] = $worker['_id'];
+
+        unset($worker['_id']);
+
+        return $worker;
     }
 
     /**

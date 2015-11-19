@@ -1,4 +1,10 @@
 services:
+    app.guzzle.client:
+        class: GuzzleHttp\Client
+    app.transport.job:
+        class: AppBundle\Transport\JobTransport
+        arguments:
+            - @app.guzzle.client
     app.manager.worker:
         class: AppBundle\Manager\WorkerManager
         arguments:
@@ -9,6 +15,7 @@ services:
         arguments:
             - @app.document.repository.job
             - @app.manager.worker
+            - @app.transport.job
     app.manager.job_description:
         class: AppBundle\Manager\JobDescriptionManager
         arguments:

@@ -75,6 +75,33 @@ class JobControllerTest extends AbstractBaseFunctionalTest
 
     public function testCreateActionSync()
     {
+        $jobTransportStub = $this->getMock(\AppBundle\Transport\JobTransportInterface::class);
+
+        $jobTransportStub->method(
+            'submitJobToWorker'
+        )->will($this->returnCallback(function ($workerAdress, $jobId, $jobName, $jobParameters) {
+            $this->assertSame(
+                '127.0.0.1',
+                $workerAdress
+            );
+            $this->assertInstanceOf(
+                \MongoId::class,
+                $jobId
+            );
+            $this->assertSame(
+                'test',
+                $jobName
+            );
+            $this->assertSame(
+                [
+                    'foobar',
+                ],
+                $jobParameters
+            );
+        }));
+
+        $this->container->set('app.transport.job', $jobTransportStub);
+
         $worker = [
             '_id' => '127.0.0.1',
         ];
@@ -86,7 +113,9 @@ class JobControllerTest extends AbstractBaseFunctionalTest
             '/api/v1/job',
             [
                 'name' => 'test',
-                'parameters' => [],
+                'parameters' => [
+                    'foobar',
+                ],
                 'sync' => true,
             ]
         );
@@ -110,7 +139,12 @@ class JobControllerTest extends AbstractBaseFunctionalTest
 
         $this->assertSame($jsonResponse['result']['id'], (string)$result[0]['_id']);
         $this->assertSame('test', $result[0]['name']);
-        $this->assertSame([], $result[0]['parameters']);
+        $this->assertSame(
+            [
+                'foobar',
+            ],
+            $result[0]['parameters']
+        );
         $this->assertSame(JobStatus::JOB_STATUS_NEW, $result[0]['status']);
     }
 
