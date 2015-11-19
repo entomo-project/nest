@@ -9,3 +9,5 @@ AppBundle\Document\Job:
             type: string
         parameters:
             type: raw
+        workerId:
+            type: string

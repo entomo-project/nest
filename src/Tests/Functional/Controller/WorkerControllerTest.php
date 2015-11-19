@@ -6,8 +6,25 @@ use AppBundle\Tests\Functional\AbstractBaseFunctionalTest;
 
 class WorkerControllerTest extends AbstractBaseFunctionalTest
 {
+    protected function createWorkerJob()
+    {
+        $job = [
+            'workerId' => '127.0.0.1',
+        ];
+
+        $this->getJobCollection()->insert($job);
+    }
+
+    protected function ensureNoJob()
+    {
+        $this->assertSame(0, $this->getJobCollection()->count([ 'workerId' => '127.0.0.1', ]));
+        $this->assertSame(1, $this->getJobCollection()->count());
+    }
+
     public function testUnregisterWorkerAction()
     {
+        $this->createWorkerJob();
+
         $worker = [
             '_id' => '127.0.0.1',
         ];
@@ -35,10 +52,14 @@ class WorkerControllerTest extends AbstractBaseFunctionalTest
         $results = iterator_to_array($it);
 
         $this->assertCount(0, $results);
+
+        $this->ensureNoJob();
     }
 
     public function testRegisterWorkerAction()
     {
+        $this->createWorkerJob();
+
         $this->jsonRequest(
             'POST',
             '/api/v1/worker/127.0.0.1'
@@ -71,6 +92,8 @@ class WorkerControllerTest extends AbstractBaseFunctionalTest
             ],
             $results[0]
         );
+
+        $this->ensureNoJob();
     }
 
     /**
@@ -79,5 +102,13 @@ class WorkerControllerTest extends AbstractBaseFunctionalTest
     protected function getWorkerCollection()
     {
         return $this->container->get('app.document.collection.worker');
+    }
+
+    /**
+     * @return \Doctrine\MongoDB\Collection
+     */
+    protected function getJobCollection()
+    {
+        return $this->container->get('app.document.collection.job');
     }
 }

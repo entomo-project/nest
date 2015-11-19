@@ -3,6 +3,7 @@ services:
         class: AppBundle\Manager\WorkerManager
         arguments:
             - @app.document.repository.worker
+            - @app.document.repository.job
     app.manager.job:
         class: AppBundle\Manager\JobManager
         arguments:

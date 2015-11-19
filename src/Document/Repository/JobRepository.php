@@ -18,16 +18,31 @@ class JobRepository extends AbstractBaseDocumentRepository
         );
     }
 
+    public function unassignWorkerJobs($workerId)
+    {
+        $this->collection->update(
+            [
+                'workerId' => $workerId,
+            ],
+            [
+                '$unset' => [
+                    'workerId' => ''
+                ]
+            ],
+            [
+                'multiple' => true
+            ]
+        );
+    }
+
     /**
      * @param string $name
      * @param array $parameters
      *
      * @return \MongoId
      */
-    public function createJob(
-        $name,
-        array $parameters
-    ) {
+    public function createJob($name, array $parameters)
+    {
         $job = [
             'name' => $name,
             'parameters' => $parameters,
