@@ -22,16 +22,28 @@ TaskBuilder.prototype.buildTask = function (options) {
     that,
     data,
     componentNames,
-    createdBy;
+    createdBy,
+    taskTypeId,
+    taskTypeName;
     
-  componentNames = options.componentNames;
+  componentNames = options.components;
   createdBy = options.createdBy;
+  taskTypeId = options.taskTypeId;
+  taskTypeName = options.taskTypeName;
 
   assert.notStrictEqual(null, componentNames);
   
   assert.notStrictEqual(null, createdBy);
   assert.notStrictEqual(undefined, createdBy);
   assert.notStrictEqual('', createdBy);
+  
+  assert.notStrictEqual(null, taskTypeId);
+  assert.notStrictEqual(undefined, taskTypeId);
+  assert.notStrictEqual('', taskTypeId);
+  
+  assert.notStrictEqual(null, taskTypeName);
+  assert.notStrictEqual(undefined, taskTypeName);
+  assert.notStrictEqual('', taskTypeName);
 
   that = this;
 
@@ -65,6 +77,8 @@ TaskBuilder.prototype.buildTask = function (options) {
   
   data.createdBy = createdBy;
   data.createdAt = new Date();
+  data.taskTypeId = taskTypeId;
+  data.taskTypeName = taskTypeName;
 
   var task = {
     meta: {

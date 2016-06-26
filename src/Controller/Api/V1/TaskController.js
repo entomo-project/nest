@@ -10,10 +10,18 @@ var taskBuilder = new TaskBuilder();
 function registerController(app) {
   app.put('/api/v1/task', function (req, res) {
     assert.notStrictEqual(null, req.body.components);
-    
+        
     assert.notStrictEqual(null, req.body.createdBy);
     assert.notStrictEqual(undefined, req.body.createdBy);
     assert.notStrictEqual('', req.body.createdBy);
+    
+    assert.notStrictEqual(null, req.body.taskTypeId);
+    assert.notStrictEqual(undefined, req.body.taskTypeId);
+    assert.notStrictEqual('', req.body.taskTypeId);
+
+    assert.notStrictEqual(null, req.body.taskTypeName);
+    assert.notStrictEqual(undefined, req.body.taskTypeName);
+    assert.notStrictEqual('', req.body.taskTypeName);
 
     if (undefined !== req.body.components) {
       assert(req.body.components instanceof Array && req.body.components.length > 0);
@@ -21,7 +29,9 @@ function registerController(app) {
 
     var task = taskBuilder.buildTask({
       components: req.body.components,
-      createdBy: req.body.createdBy
+      createdBy: req.body.createdBy,
+      taskTypeId: req.body.taskTypeId,
+      taskTypeName: req.body.taskTypeName
     });
 
     mongoClient
