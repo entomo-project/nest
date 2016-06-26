@@ -1,10 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
         
-    exports.componentDefinition = {
-        name: 'withStringResultTask',
-        component: {
-            result: null
-        }
-    };
-}());
+exports.componentDefinition = {
+  name: 'withStringResultTask',
+  component: {
+    result: null
+  }
+};

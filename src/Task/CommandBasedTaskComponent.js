@@ -1,10 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
     
-    exports.componentDefinition = {
-        name: 'commandBasedTask',
-        component: {
-            command: null
-        }
-    };
-}());
+exports.componentDefinition = {
+  name: 'commandBasedTask',
+  component: {
+    command: null
+  }
+};

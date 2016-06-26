@@ -1,10 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
         
-    exports.componentDefinition = {
-        name: 'abortableTask',
-        component: {
-            abortedAt: null
-        }
-    };
-}());
+exports.componentDefinition = {
+  name: 'abortableTask',
+  component: {
+    abortedAt: null
+  }
+};

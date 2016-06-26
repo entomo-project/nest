@@ -5,8 +5,6 @@ var app = express();
 
 app.use(bodyParser.json());
 
-require('./test.jsx');
-
 TaskController.register(app);
 
 app.listen(3000, function () {

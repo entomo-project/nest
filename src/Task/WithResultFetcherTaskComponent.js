@@ -1,10 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
         
-    exports.componentDefinition = {
-        name: 'withResultFetcherTask',
-        component: {
-            resultFetcher: null
-        }
-    };
-}());
+exports.componentDefinition = {
+  name: 'withResultFetcherTask',
+  component: {
+    resultFetcher: null
+  }
+};

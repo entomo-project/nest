@@ -1,10 +1,8 @@
-(function () {
-    'use strict';
+'use strict';
         
-    exports.componentDefinition = {
-        name: 'withCommentTask',
-        component: {
-            comment: null
-        }
-    };
-}());
+exports.componentDefinition = {
+  name: 'withCommentTask',
+  component: {
+    comment: null
+  }
+};
