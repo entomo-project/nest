@@ -17,12 +17,21 @@ TaskBuilder.prototype = {
   componentNameComponentFileAssoc: null
 };
 
-TaskBuilder.prototype.buildTask = function (componentNames) {
+TaskBuilder.prototype.buildTask = function (options) {
   var components,
     that,
-    data;
+    data,
+    componentNames,
+    createdBy;
+    
+  componentNames = options.componentNames;
+  createdBy = options.createdBy;
 
   assert.notStrictEqual(null, componentNames);
+  
+  assert.notStrictEqual(null, createdBy);
+  assert.notStrictEqual(undefined, createdBy);
+  assert.notStrictEqual('', createdBy);
 
   that = this;
 
@@ -39,8 +48,6 @@ TaskBuilder.prototype.buildTask = function (componentNames) {
   foreach(componentNames, function (origComponentName) {
     var componentName;
 
-    console.log(origComponentName)
-
     componentName = origComponentName + 'Task';
 
     var componentFileName = that.componentNameComponentFileAssoc[componentName];
@@ -55,6 +62,9 @@ TaskBuilder.prototype.buildTask = function (componentNames) {
   });
 
   data = extend.apply(undefined, [{}].concat(components));
+  
+  data.createdBy = createdBy;
+  data.createdAt = new Date();
 
   var task = {
     meta: {

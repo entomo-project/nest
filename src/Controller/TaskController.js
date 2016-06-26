@@ -14,25 +14,6 @@ function makeJsonGetCall(uri) {
   return rp(options);
 }
 
-//var tasks = [
-//      {
-//_id: "576ebf0bea2d1c230d78cdec",
-//meta: {
-//components: [
-//"base",
-//'foo'
-//]
-//},
-//data: {
-//startedAt: null,
-//stoppedAt: null,
-//maxDuration: null,
-//taskTypeId: null,
-//taskTypeName: null
-//}
-//}
-//    ];
-
 var taskListFactory = React.createFactory(taskList.default);
 
 function registerController(app) {
