@@ -18,6 +18,8 @@ class TaskRow extends React.Component {
       <tr onClick={this.handleClick}>
         <td>{ task._id }</td>
         <td>{ JSON.stringify(task.meta.components) }</td>
+        <td>{ task.data.createdAt }</td>
+        <td>{ task.data.createdBy }</td>
         <td>{ task.data.startedAt }</td>
         <td>{ task.data.stoppedAt }</td>
         <td>{ task.data.maxDuration }</td>
@@ -47,6 +49,8 @@ class TaskTable extends React.Component {
           <tr>
             <th>Id</th>
             <th>Composed of</th>
+            <th>Created at</th>
+            <th>Created by</th>
             <th>Started at</th>
             <th>Stopped at</th>
             <th>Max duration</th>
