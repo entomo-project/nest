@@ -46,6 +46,10 @@ function registerController(app) {
       );
     });
   });
+  
+  app.get('/', function (req, res) {
+    res.redirect('/task');
+  });
 }
 
 exports.register = registerController;

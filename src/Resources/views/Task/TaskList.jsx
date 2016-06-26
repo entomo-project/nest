@@ -8,7 +8,7 @@ class TaskList extends Layout {
   constructor(props) {
     super(props);
   }
-  renderBody() {
+  renderBodyContainerContent() {
     return (
       <TaskTable tasks={this.props.tasks} />
     );

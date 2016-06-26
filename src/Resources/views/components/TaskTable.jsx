@@ -7,11 +7,15 @@ class TaskRow extends React.Component {
     super(props);
   }
 
+  handleClick() {
+    console.log('clicked')
+  }
+
   render() {
     const task = this.props.task;
 
     return (
-      <tr>
+      <tr onClick={this.handleClick}>
         <td>{ task._id }</td>
         <td>{ JSON.stringify(task.meta.components) }</td>
         <td>{ task.data.startedAt }</td>
@@ -38,7 +42,7 @@ class TaskTable extends React.Component {
     });
 
     return (
-      <table class="table table-bordered">
+      <table className="table table-striped table-hover table-condensed">
         <thead>
           <tr>
             <th>Id</th>
