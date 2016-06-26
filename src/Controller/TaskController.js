@@ -17,7 +17,6 @@ function makeJsonGetCall(uri) {
 var taskListFactory = React.createFactory(taskList.default);
 
 function registerController(app) {
-
   app.get('/task', function (req, res) {
     makeJsonGetCall('http://localhost:3000/api/v1/task').then(function (tasks) {
       res.send(
