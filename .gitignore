@@ -1,3 +1,7 @@
 /dist
+
 /app/logs/*
 !/app/logs/.keepme
+
+/build/*
+!/build/.keepme
