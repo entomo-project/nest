@@ -1,8 +1,6 @@
-'use strict';
-
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
-import taskList from  '../Resources/views/Task/TaskList'
+import taskList from  '../../Common/Resources/views/Task/TaskList'
 import rp from 'request-promise'
 
 function makeJsonGetCall(uri) {

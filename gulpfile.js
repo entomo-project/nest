@@ -22,7 +22,7 @@ gulp.task('cleanDistDirectory', function() {
 
 gulp.task('jsxCompile', [ 'cleanDistDirectory' ], function () {
   return gulp
-    .src('src/Resources/views/**/*.jsx')
+    .src('src/**/*.jsx')
 //    .pipe(cache.filter())
     .pipe(plumber())
     .pipe(debug({}))
@@ -33,7 +33,7 @@ gulp.task('jsxCompile', [ 'cleanDistDirectory' ], function () {
     .pipe(rename(function (path) {
       path.extname = '.js'
     }))
-    .pipe(gulp.dest('dist/Resources/views'))
+    .pipe(gulp.dest('dist'))
 })
 
 gulp.task('jsCompile', [ 'cleanDistDirectory' ], function () {
@@ -90,8 +90,8 @@ gulp.task('watch', [ 'main' ], function () {
   const nodemonBin = __dirname + '/node_modules/.bin/nodemon'
   const baseArgs = [ '--watch', 'build/increment' ]
 
-  runProcess(nodemonBin, baseArgs.concat([ 'dist/ws.js' ]))
-  runProcess(nodemonBin, baseArgs.concat([ 'dist/front.js' ]))
+  runProcess(nodemonBin, baseArgs.concat([ 'dist/PublicApi/App.js' ]))
+  runProcess(nodemonBin, baseArgs.concat([ 'dist/Front/App.js' ]))
   // runProcess(nodemonBin, baseArgs.concat([ 'dist/scheduler.js' ]))
   // runProcess(nodemonBin, baseArgs.concat([ 'dist/worker.js' ]))
 

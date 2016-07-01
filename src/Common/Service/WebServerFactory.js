@@ -9,6 +9,7 @@ function haltOnTimedout(req, res, next){
 function WebServerFactory() {
   const app = express();
 
+  //FIXME not in prod?
   app.use(timeout('5s'));
   app.use(bodyParser.json());
   app.use(haltOnTimedout);

@@ -1,10 +1,10 @@
-import Kernel from './DependencyInjection/Kernel'
+import Kernel from '../Common/DependencyInjection/Kernel'
 import TaskController from './Controller/Api/V1/TaskController'
-import MongoClient from './Service/Mongo/MongoClient'
-import TaskBuilder from './Service/Task/TaskBuilder'
-import WebServerFactory from './Service/WebServerFactory'
+import MongoClient from '../Common/Service/Mongo/MongoClient'
+import TaskBuilder from '../Common/Service/Task/TaskBuilder'
+import WebServerFactory from '../Common/Service/WebServerFactory'
 
-class WsKernel extends Kernel {
+class PublicApiKernel extends Kernel {
   _configureServiceContainer() {
     super._configureServiceContainer()
 
@@ -28,7 +28,7 @@ class WsKernel extends Kernel {
   }
 }
 
-const kernel = new WsKernel()
+const kernel = new PublicApiKernel()
 
 kernel.boot()
 

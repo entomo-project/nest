@@ -1,4 +1,4 @@
-import kernel from './WsKernel'
+import kernel from './PublicApiKernel'
 
 const container = kernel.serviceContainer
 

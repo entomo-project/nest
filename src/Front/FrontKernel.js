@@ -1,6 +1,6 @@
-import Kernel from './DependencyInjection/Kernel'
+import Kernel from '../Common/DependencyInjection/Kernel'
 import TaskController from './Controller/TaskController'
-import WebServerFactory from './Service/WebServerFactory'
+import WebServerFactory from '../Common/Service/WebServerFactory'
 
 class FrontKernel extends Kernel {
   _configureServiceContainer() {
