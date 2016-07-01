@@ -1,9 +1,17 @@
-var express = require('express');
-var TaskController = require(__dirname + '/Controller/TaskController');
-var app = express();
+import kernel from './FrontKernel'
 
-TaskController.register(app);
+const container = kernel.serviceContainer
 
-app.listen(3001, function () {
-  console.log('Front app listening on port 3001');
-});
+const logger = container.get('app.logger')
+
+logger.info('Starting front app.')
+
+const app = container.get('app.service.web_server_factory')()
+
+container.get('app.controller.task').register(app)
+
+const port = container.getParameter('web_server_port')
+
+app.listen(port, function () {
+  logger.info('Front app listening.', { port: port })
+})

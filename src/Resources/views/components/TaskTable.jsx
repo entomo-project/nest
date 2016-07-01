@@ -39,7 +39,7 @@ class TaskTable extends React.Component {
 
     this.props.tasks.forEach(function (task) {
       rows.push(
-        <TaskRow task={task} />
+        <TaskRow key={task._id} task={task} />
       );
     });
 

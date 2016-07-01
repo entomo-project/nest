@@ -1,12 +1,17 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var TaskController = require(__dirname + '/Controller/Api/V1/TaskController');
-var app = express();
+import kernel from './WsKernel'
 
-app.use(bodyParser.json());
+const container = kernel.serviceContainer
 
-TaskController.register(app);
+const logger = container.get('app.logger')
 
-app.listen(3000, function () {
-  console.log('Webservice app listening on port 3000');
-});
+logger.info('Starting webservice app.')
+
+const app = container.get('app.service.web_server_factory')()
+
+container.get('app.controller.api.v1.task').register(app)
+
+const port = container.getParameter('web_server_port')
+
+app.listen(port, function () {
+  logger.info('Webservice app listening.', { port: port })
+})

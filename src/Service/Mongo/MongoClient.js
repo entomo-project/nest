@@ -63,4 +63,4 @@ MongoClient.prototype.collection = function (databaseName, collectionName) {
   );
 }; 
 
-exports.MongoClient = MongoClient;
+export default MongoClient

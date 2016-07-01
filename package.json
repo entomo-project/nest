@@ -3,15 +3,19 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "connect-timeout": "^1.7.0",
     "express": "^4.14.0",
     "extend": "^3.0.0",
     "foreach": "^2.0.5",
     "mongodb": "^2.1.18",
+    "nodemon": "^1.9.2",
     "promise": "^7.1.1",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
+    "request-promise": "^3.0.0",
     "resolve-from": "^2.0.0",
-    "semver": "^5.1.1"
+    "semver": "^5.1.1",
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.10.1",
@@ -20,11 +24,13 @@
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-clean": "^0.3.2",
     "gulp-debug": "^2.1.2",
+    "gulp-file-cache": "0.0.1",
     "gulp-jsx": "^2.0.1",
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
-    "request-promise": "^3.0.0"
+    "gulp-util": "^3.0.7"
   },
   "babel": {
     "presets": [
