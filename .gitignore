@@ -1,3 +1,5 @@
+/node_modules
+
 /dist
 
 /app/logs/*
@@ -5,3 +7,5 @@
 
 /build/*
 !/build/.keepme
+
+.gulp-cache
