@@ -1,8 +1,6 @@
-'use strict';
+import { Logger as BaseLogger } from 'winston'
 
-const winston = require('winston');
-
-class Logger extends winston.Logger {
+class Logger extends BaseLogger {
 }
 
 export default Logger

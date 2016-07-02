@@ -1,6 +1,6 @@
 import ServiceContainer from './ServiceContainer'
+import winston from 'winston'
 import Logger from '../Service/Logger'
-
 
 class Kernel {
   constructor() {
@@ -8,7 +8,13 @@ class Kernel {
   }
 
   _configureServiceContainer() {
-    const logger = new Logger()
+    const logger = new Logger({
+      transports: [
+        new (winston.transports.Console)()
+      ]
+    })
+
+    // new (winston.transports.File)({ filename: 'somefile.log' })
 
     logger.level = 'debug'
 
