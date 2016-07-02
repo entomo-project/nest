@@ -1,5 +1,5 @@
 import assert from 'assert'
-import ObjectID from 'mongodb'
+import { ObjectID } from 'mongodb'
 
 class SchedulerService {
   constructor(logger, mongoClient, rp, webServerFactory, port, queueSize) {
@@ -63,10 +63,18 @@ class SchedulerService {
 
     this._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .update({ _id: ObjectID(taskId) }, { $set: { 'data.stoppedAt': new Date() } })
-          .then(function() {
+          .then((data) => {
+            if (data.result.nModified !== 1) {
+              res.status(400).send({ status: 'error' })
+
+              this._logger.error('Expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+
+              return
+            }
+
             that._logger.info('Marked task as done.', { _id: taskId });
 
             that._removeTaskFromQueue(taskId)
