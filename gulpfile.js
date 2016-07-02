@@ -92,10 +92,8 @@ gulp.task('watch', [ 'main' ], function () {
 
   runProcess(nodemonBin, baseArgs.concat([ 'dist/PublicApi/App.js' ]))
   runProcess(nodemonBin, baseArgs.concat([ 'dist/Front/App.js' ]))
-  // runProcess(nodemonBin, baseArgs.concat([ 'dist/scheduler.js' ]))
-  // runProcess(nodemonBin, baseArgs.concat([ 'dist/worker.js' ]))
-
-  // runProcess(nodemonBin, baseArgs.concat([ 'dist/sc.js' ]))
-
+  runProcess(nodemonBin, baseArgs.concat([ 'dist/Worker/App.js' ]))
+  runProcess(nodemonBin, baseArgs.concat([ 'dist/Scheduler/App.js' ]))
+  
   return gulp.watch(paths.src + '/**/*', [ 'main' ])
 })
