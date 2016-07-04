@@ -33,4 +33,8 @@ RUN echo "cd /home/r/nest" >> /home/r/.bashrc
 
 RUN /opt/node/current/bin/npm install nodemon -g
 
+RUN \
+  apt-get install -y \
+    git
+
 ENTRYPOINT /entrypoint.sh

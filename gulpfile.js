@@ -1,5 +1,5 @@
 'use strict';
-    
+
 const gulp = require('gulp')
 const babel = require('gulp-babel')
 const debug = require('gulp-debug')
@@ -56,7 +56,7 @@ function string_src(filename, string) {
     this.push(new gutil.File({ cwd: "", base: "", path: filename, contents: new Buffer(string) }))
     this.push(null)
   }
-  
+
   return src
 }
 
@@ -64,7 +64,7 @@ var incrementCount = 0
 
 gulp.task('main', [ 'jsxCompile', 'jsCompile' ], function () {
   incrementCount += 1
-    
+
   return string_src('increment', '' + incrementCount)
     .pipe(gulp.dest('build/'))
 })
@@ -94,6 +94,6 @@ gulp.task('watch', [ 'main' ], function () {
   runProcess(nodemonBin, baseArgs.concat([ 'dist/Front/App.js' ]))
   runProcess(nodemonBin, baseArgs.concat([ 'dist/Worker/App.js' ]))
   runProcess(nodemonBin, baseArgs.concat([ 'dist/Scheduler/App.js' ]))
-  
+
   return gulp.watch(paths.src + '/**/*', [ 'main' ])
 })

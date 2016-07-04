@@ -1,5 +1,5 @@
 'use strict';
-    
+
 var assert = require('assert')
 
 var foreach = require('foreach')
@@ -22,17 +22,18 @@ TaskBuilder.prototype.buildTask = function (options) {
   const createdBy = options.createdBy
   const taskTypeId = options.taskTypeId
   const taskTypeName = options.taskTypeName
+  const command = options.command
 
   assert.notStrictEqual(null, optionComponentNames)
-  
+
   assert.notStrictEqual(null, createdBy)
   assert.notStrictEqual(undefined, createdBy)
   assert.notStrictEqual('', createdBy)
-  
+
   assert.notStrictEqual(null, taskTypeId)
   assert.notStrictEqual(undefined, taskTypeId)
   assert.notStrictEqual('', taskTypeId)
-  
+
   assert.notStrictEqual(null, taskTypeName)
   assert.notStrictEqual(undefined, taskTypeName)
   assert.notStrictEqual('', taskTypeName)
@@ -68,11 +69,19 @@ TaskBuilder.prototype.buildTask = function (options) {
   })
 
   const data = extend.apply(undefined, [{}].concat(components))
-  
+
   data.createdBy = createdBy
   data.createdAt = new Date()
   data.taskTypeId = taskTypeId
   data.taskTypeName = taskTypeName
+
+  if (componentNames.indexOf('commandBased') !== -1) {
+    assert.notStrictEqual(null, command)
+    assert.notStrictEqual(undefined, command)
+    assert.notStrictEqual('', command)
+
+    data.command = command
+  }
 
   var task = {
     meta: {

@@ -2,6 +2,10 @@
 
 import React from 'react';
 
+//<script type="text/javascript" src="build/react.js"></script>
+//<script type="text/javascript" src="build/react-dom.js"></script>
+//<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+
 class Layout extends React.Component {
   constructor(props) {
     super(props);

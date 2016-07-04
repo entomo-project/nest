@@ -1,8 +1,9 @@
 import assert from 'assert'
 
 class WorkerService {
-  constructor(logger, webServerFactory, requestPromiseFactory, vm, port) {
+  constructor(logger, exec, webServerFactory, requestPromiseFactory, vm, port) {
     this._logger = logger
+    this._exec = exec
     this._webServerFactory = webServerFactory
     this._requestPromiseFactory = requestPromiseFactory
     this._vm = vm
@@ -61,7 +62,7 @@ class WorkerService {
           globalVar: 1,
           done: done,
           console: console,
-          // exec: exec,
+          exec: this._exec,
           assert: assert
         }
 

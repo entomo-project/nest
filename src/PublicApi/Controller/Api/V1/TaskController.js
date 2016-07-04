@@ -23,13 +23,20 @@ class TaskController{
 
     if (undefined !== req.body.components) {
       assert(req.body.components instanceof Array && req.body.components.length > 0)
+
+      if (req.body.components.indexOf('commandBased') !== -1) {
+        assert.notStrictEqual(null, req.body.command)
+        assert.notStrictEqual(undefined, req.body.command)
+        assert.notStrictEqual('', req.body.command)
+      }
     }
 
     const task = this._taskBuilder.buildTask({
       components: req.body.components,
       createdBy: req.body.createdBy,
       taskTypeId: req.body.taskTypeId,
-      taskTypeName: req.body.taskTypeName
+      taskTypeName: req.body.taskTypeName,
+      command: req.body.command
     })
 
     this._mongoClient
@@ -42,7 +49,7 @@ class TaskController{
           })
       })
   }
-  
+
   getTask(req, res, id) {
     this._mongoClient
       .collection('nest', 'task')
@@ -72,7 +79,7 @@ class TaskController{
   }
 
   register(app) {
-    app.put('/api/v1/task', this.putTask.bind(this))
+    app.post('/api/v1/task', this.putTask.bind(this))
     app.get('/api/v1/task/:id', this.getTask.bind(this))
     app.get('/api/v1/task', this.listTasks.bind(this))
   }

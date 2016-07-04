@@ -94,14 +94,14 @@ class SchedulerService {
       this._queue[_id] = task
       this._elementsInQueue += 1
 
-      this._logger.info('Notifying worker.');
+      this._logger.info('Notifying worker.')
 
       that._rp({
         method: 'POST',
         uri: 'http://localhost:3003/do',
         body: {
           taskId: _id,
-          command: 'console.log(\'oui mon seigneur\'); done();'
+          command: task.data.command
         },
         json: true
       }).then(function () {
@@ -122,6 +122,7 @@ class SchedulerService {
   _main() {
     const that = this
 
+    //Limit 4
     this._mongoClient
       .collection('nest', 'task')
       .then(function (collection) {

@@ -1,4 +1,4 @@
-import exec from 'child_process'
+import { exec } from 'child_process'
 import vm from 'vm'
 import requestPromiseFactory from 'request-promise'
 import Kernel from '../Common/DependencyInjection/Kernel'
@@ -18,6 +18,7 @@ class WorkerKernel extends Kernel {
 
     const workerService = new WorkerService(
       this.serviceContainer.get('app.logger'),
+      this.serviceContainer.get('app.service.exec'),
       this.serviceContainer.get('app.service.web_server_factory'),
       this.serviceContainer.get('app.service.request_promise_factory'),
       this.serviceContainer.get('app.service.vm'),
