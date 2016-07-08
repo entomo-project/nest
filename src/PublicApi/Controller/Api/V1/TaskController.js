@@ -7,27 +7,28 @@ class TaskController{
   }
 
   putTask(req, res) {
-    assert.notStrictEqual(null, req.body.components)
+    assert.notStrictEqual(null, req.body.components, 'Missing components.')
 
-    assert.notStrictEqual(null, req.body.createdBy)
-    assert.notStrictEqual(undefined, req.body.createdBy)
-    assert.notStrictEqual('', req.body.createdBy)
+    assert.notStrictEqual(null, req.body.createdBy, 'Missing createdBy.')
+    assert.notStrictEqual(undefined, req.body.createdBy, 'Missing createdBy.')
+    assert.notStrictEqual('', req.body.createdBy, 'Missing createdBy.')
 
-    assert.notStrictEqual(null, req.body.taskTypeId)
-    assert.notStrictEqual(undefined, req.body.taskTypeId)
-    assert.notStrictEqual('', req.body.taskTypeId)
+    assert.notStrictEqual(null, req.body.taskTypeId, 'Missing taskTypeId.')
+    assert.notStrictEqual(undefined, req.body.taskTypeId, 'Missing taskTypeId.')
+    assert.notStrictEqual('', req.body.taskTypeId, 'Missing taskTypeId.')
 
-    assert.notStrictEqual(null, req.body.taskTypeName)
-    assert.notStrictEqual(undefined, req.body.taskTypeName)
-    assert.notStrictEqual('', req.body.taskTypeName)
+    assert.notStrictEqual(null, req.body.taskTypeName, 'Missing taskTypeName.')
+    assert.notStrictEqual(undefined, req.body.taskTypeName, 'Missing taskTypeName.')
+    assert.notStrictEqual('', req.body.taskTypeName, 'Missing taskTypeName.')
 
     if (undefined !== req.body.components) {
-      assert(req.body.components instanceof Array && req.body.components.length > 0)
+      assert(req.body.components instanceof Array, 'Expecting components to be array.')
+      assert(req.body.components.length > 0, 'Empty components.')
 
       if (req.body.components.indexOf('commandBased') !== -1) {
-        assert.notStrictEqual(null, req.body.command)
-        assert.notStrictEqual(undefined, req.body.command)
-        assert.notStrictEqual('', req.body.command)
+        assert.notStrictEqual(null, req.body.command, 'Missing command.')
+        assert.notStrictEqual(undefined, req.body.command, 'Missing command.')
+        assert.notStrictEqual('', req.body.command, 'Missing command.')
       }
     }
 

@@ -34,10 +34,18 @@ class WorkerService {
       const onTaskStartNotified = () => {
         this._logger.info('Worker done notifying nest that task has started.', { options: notifyTaskStartedOptions })
 
-        const done = () => {
+        const done = (error) => {
+          const body = {
+            taskId: req.body.taskId
+          }
+
+          if (undefined !== error) {
+            body.error = error
+          }
+
           const notifyTaskDoneOptions = {
             method: 'PUT',
-            uri: 'http://localhost:3002/api/v1/task/done',
+            uri: 'http://localhost:3002/api/v1/task/stopped',
             body: {
               taskId: req.body.taskId
             },
@@ -68,7 +76,13 @@ class WorkerService {
 
         this._vm.createContext(sandbox)
 
-        this._vm.runInContext(req.body.command, sandbox)
+        try {
+          this._vm.runInContext(req.body.command, sandbox)
+        } catch (e) {
+          done(e)
+
+          throw e
+        }
       }
 
       this

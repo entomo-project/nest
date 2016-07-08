@@ -22,7 +22,7 @@ class SchedulerService {
     const app = this._webServerFactory();
 
     app.put('/api/v1/task/started', this._taskStarted.bind(this))
-    app.put('/api/v1/task/done', this._taskDone.bind(this))
+    app.put('/api/v1/task/stopped', this._taskStopped.bind(this))
 
     app.listen(this._port, () => {
       this._logger.info('Scheduler listening.', { port: this._port });
@@ -51,7 +51,7 @@ class SchedulerService {
       })
   }
 
-  _taskDone(req, res) {
+  _taskStopped(req, res) {
     const that = this
     const taskId = req.body.taskId
 

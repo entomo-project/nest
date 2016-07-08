@@ -18,13 +18,20 @@ const taskLauncherFactory = React.createFactory(taskLauncher);
 
 class TaskController {
   register(app) {
-    app.get('/task/launch', function (req, res) {
+    function launchTask(req, res) {
+      if ('POST' === req.method) {
+        console.log(res)
+      }
+
       res.send(
         ReactDOMServer.renderToString(
           taskLauncherFactory()
         )
       )
-    });
+    }
+
+    app.get('/task/launch', launchTask);
+    app.post('/task/launch', launchTask);
 
     app.get('/task', function (req, res) {
       makeJsonGetCall('http://localhost:3000/api/v1/task').then(function (tasks) {
