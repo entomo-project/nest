@@ -8,12 +8,21 @@ const plumber = require('gulp-plumber')
 const Cache = require('gulp-file-cache')
 const clean = require('gulp-clean')
 const gutil = require('gulp-util')
+const browserify = require('browserify')
+const source = require('vinyl-source-stream');
 
 const cache = new Cache()
 
 const paths = {
   src: 'src'
 }
+
+gulp.task('browserify', function () {
+  return browserify('./dist/Common/Resources/views/*.js')
+    .bundle()
+    .pipe(source('bundle.js'))
+    .pipe(gulp.dest('./'))
+});
 
 gulp.task('cleanDistDirectory', function() {
   return gulp.src('dist', {read: false})

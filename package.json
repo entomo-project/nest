@@ -3,6 +3,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "browserify": "^13.0.1",
     "connect-timeout": "^1.7.0",
     "express": "^4.14.0",
     "extend": "^3.0.0",
@@ -15,6 +16,7 @@
     "request-promise": "^3.0.0",
     "resolve-from": "^2.0.0",
     "semver": "^5.1.1",
+    "vinyl-source-stream": "^1.1.0",
     "winston": "^2.2.0"
   },
   "devDependencies": {
