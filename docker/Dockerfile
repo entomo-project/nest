@@ -21,20 +21,17 @@ RUN rm node-v4.4.6-linux-x64.tar.xz
 RUN mkdir /opt/node
 RUN mv /root/node-v4.4.6-linux-x64 /opt/node/current
 
-RUN echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc
-RUN echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
-
-ENV HOME /root
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod u+x /entrypoint.sh
-
-RUN echo "cd /home/r/nest" >> /home/r/.bashrc
-
 RUN /opt/node/current/bin/npm install nodemon -g
 
 RUN \
   apt-get install -y \
     git
 
-ENTRYPOINT /entrypoint.sh
+RUN \
+  apt-get install -y \
+    openssh-server
+
+RUN echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc
+RUN echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
+
+ENV HOME /root
