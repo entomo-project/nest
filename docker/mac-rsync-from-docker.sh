@@ -10,4 +10,4 @@ rsync \
   --exclude .git \
   --exclude .idea \
   --delete-after \
-  r@$DOCKER_MACHINE_IP:/home/r/nest $DIR/..
+  r@$DOCKER_MACHINE_IP:/home/r/nest/ $DIR/..
