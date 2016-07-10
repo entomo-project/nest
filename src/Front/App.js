@@ -1,4 +1,5 @@
 import kernel from './FrontKernel'
+import express from 'express'
 
 const container = kernel.serviceContainer
 
@@ -7,6 +8,8 @@ const logger = container.get('app.logger')
 logger.info('Starting front app.')
 
 const app = container.get('app.service.web_server_factory')()
+
+app.use(express.static(__dirname + '/../../public'))
 
 container.get('app.controller.task').register(app)
 

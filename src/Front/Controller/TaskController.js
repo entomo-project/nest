@@ -4,10 +4,11 @@ import taskList from  '../../Common/Resources/views/Task/TaskList'
 import taskLauncher from  '../../Common/Resources/views/Task/TaskLauncher'
 import rp from 'request-promise'
 
-function makeJsonGetCall(uri) {
+function makeJsonGetCall(uri, qs) {
   var options = {
     uri: uri,
-    json: true
+    json: true,
+    qs: qs
   };
 
   return rp(options);
@@ -34,7 +35,31 @@ class TaskController {
     app.post('/task/launch', launchTask);
 
     app.get('/task', function (req, res) {
-      makeJsonGetCall('http://localhost:3000/api/v1/task').then(function (tasks) {
+      var page,
+        pageSize
+
+      if (undefined === req.query.page) {
+        page = 1
+      } else {
+        page = parseInt(req.query.page, 10)
+      }
+
+      if (undefined === req.query.pageSize) {
+        pageSize = 10
+      } else {
+        pageSize = parseInt(req.query.pageSize, 10)
+      }
+
+      const from = (1 - page) * pageSize
+      const limit = pageSize
+
+      makeJsonGetCall(
+        'http://localhost:3000/api/v1/task',
+        {
+          from: from,
+          limit: limit
+        }
+      ).then(function (tasks) {
         res.send(
           ReactDOMServer.renderToString(
             taskListFactory({ tasks: tasks })

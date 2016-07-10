@@ -10,6 +10,7 @@ const clean = require('gulp-clean')
 const gutil = require('gulp-util')
 const browserify = require('browserify')
 const source = require('vinyl-source-stream');
+const glob = require('glob');
 
 const cache = new Cache()
 
@@ -18,10 +19,14 @@ const paths = {
 }
 
 gulp.task('browserify', function () {
-  return browserify('./dist/Common/Resources/views/*.js')
+  const files = glob.sync('./dist/Common/Resources/views/*/*.js')
+
+  return browserify({
+    entries: files
+  })
     .bundle()
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./'))
+    .pipe(source('components.js'))
+    .pipe(gulp.dest('./public/js'))
 });
 
 gulp.task('cleanDistDirectory', function() {

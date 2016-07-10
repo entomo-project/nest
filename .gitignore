@@ -9,4 +9,7 @@
 /build/*
 !/build/.keepme
 
+/public/*
+!/public/.keepme
+
 .gulp-cache

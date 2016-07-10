@@ -56,8 +56,9 @@ class TaskController{
       .collection('nest', 'task')
       .then(function (collection) {
         collection
-          .findOne({ '_id': id })
-          .then(function(doc) {
+          .find({ '_id': id })
+          .limit(1)
+          .next(function(err, doc){
             if (null === doc) {
               res.status(404).send({ status: 'not_found' })
             } else {
@@ -68,14 +69,28 @@ class TaskController{
   }
 
   listTasks(req, res) {
+    const from = req.query.from
+    const limit = req.query.limit
+
+    assert.notStrictEqual(undefined, from, 'Missing from')
+    assert.notStrictEqual(undefined, limit, 'Missing limit')
+
     this._mongoClient
       .collection('nest', 'task')
       .then(function (collection) {
-        collection.find({}, {}, { sort: { 'data.createdAt': -1 } }).toArray(function(err, docs) {
-          assert.strictEqual(null, err)
+        // console.log(collection.find().sort({ 'data.createdAt': -1 })
+        // .limit(limit)
+        // .skip(from)
 
-          res.send(docs)
-        })
+        collection
+          .find()
+          .sort({ 'data.createdAt': -1 })
+          .limit(1)
+          .toArray(function(err, docs) {
+            assert.strictEqual(null, err)
+
+            res.send(docs)
+          })
       })
   }
 
