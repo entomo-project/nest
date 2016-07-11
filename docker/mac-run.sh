@@ -28,6 +28,10 @@ docker run \
   entomo-project/nest \
   bash -c "service ssh start && chown r:r /home/r/nest && tail -f /dev/null"
 
+DOCKER_MACHINE_IP=`docker-machine inspect --format "{{.Driver.HostOnlyCIDR}}" | sed -E 's#(.*)/24#\1#'`
+
+docker exec -t entomo-project-nest bash -c "echo $DOCKER_MACHINE_IP dockermachine >> /etc/hosts"
+
 ID_RSA_PUB=$(cat ~/.ssh/id_rsa.pub)
 
 docker exec -t entomo-project-nest bash -c "mkdir -p /home/r/.ssh"
