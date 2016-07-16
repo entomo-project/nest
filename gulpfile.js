@@ -13,6 +13,7 @@ const glob = require('glob')
 const rp = require('request-promise')
 const forever = require('forever')
 const assert = require('assert')
+const process = require('process')
 
 const cache = new Cache()
 
@@ -43,7 +44,7 @@ gulp.task('browserify', function () {
     .bundle()
     .pipe(source('components.js'))
     .pipe(gulp.dest('./public/js'))
-});
+})
 
 gulp.task('cleanDistDirectory', function() {
   return gulp.src('dist', {read: false})
@@ -99,10 +100,24 @@ function runProcess(command) {
   child.start()
 }
 
-gulp.task('mainWatch', ['main'], function () {
+function stopChildren() {
   children.forEach(function (child) {
+    console.log('Stopping child')
+
     child.stop()
   })
+}
+
+process.on('SIGINT', function() {
+  console.log('SIGINT: aborting')
+
+  stopChildren()
+
+  process.exit()
+})
+
+gulp.task('mainWatch', ['main'], function () {
+  stopChildren()
 
   runProcess('dist/PublicApi/App.js')
   runProcess('dist/Front/App.js')
