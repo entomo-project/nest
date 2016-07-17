@@ -40,6 +40,8 @@ class TaskTable extends React.Component {
     var page,
       pageSize
 
+    console.log(this.context.router.getCurrentQuery())
+
     const rawPage = this.props.page
     const rawPageSize = this.props.pageSize
 
@@ -105,6 +107,10 @@ class TaskTable extends React.Component {
 
     return (table)
   }
+}
+
+TaskTable.contextTypes = {
+  router: React.PropTypes.func
 }
 
 export default TaskTable
