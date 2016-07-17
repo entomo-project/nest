@@ -1,17 +1,8 @@
-'use strict';
-
 import React from 'react';
-
-//<script type="text/javascript" src="build/react.js"></script>
-//<script type="text/javascript" src="build/react-dom.js"></script>
-//<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
 
 class Layout extends React.Component {
   constructor(props) {
     super(props);
-  }
-
-  renderBodyContainerContent() {
   }
 
   render() {
@@ -28,16 +19,13 @@ class Layout extends React.Component {
             crossOrigin="anonymous" />
         </head>
         <body>
-          <nav className="navbar navbar-default">
-            <div className="container-fluid">
-              <div className="navbar-header">
-                <a className="navbar-brand" href="/">Nest</a>
-              </div>
-            </div>
-          </nav>
-          <div className="container-fluid">
-            { this.renderBodyContainerContent() }
+          <div
+            id="app-main-container">
           </div>
+          <script
+            type="text/javascript"
+            src="/static/js/main.js">
+          </script>
         </body>
       </html>
     );

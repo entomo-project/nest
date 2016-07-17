@@ -3,7 +3,6 @@
 const gulp = require('gulp')
 const babel = require('gulp-babel')
 const debug = require('gulp-debug')
-const rename = require('gulp-rename')
 const plumber = require('gulp-plumber')
 const Cache = require('gulp-file-cache')
 const clean = require('gulp-clean')
@@ -18,7 +17,12 @@ const process = require('process')
 const cache = new Cache()
 
 const paths = {
-  src: 'src'
+  src: 'src',
+  browserify: {
+    entries: [
+      __dirname + '/dist/Front/Public/Main.js'
+    ]
+  }
 }
 
 function notify(title, message) {
@@ -35,15 +39,17 @@ function notify(title, message) {
   })
 }
 
-gulp.task('browserify', function () {
-  const files = glob.sync('./dist/Common/Resources/views/*/*.js')
-
-  return browserify({
-    entries: files
+gulp.task('browserify', [ 'main' ], function () {
+  const br = browserify({
+    entries: paths.browserify.entries
   })
+
+  br.ignore('cls-bluebird')
+
+  return br.transform('babelify', { presets: [ 'es2015', 'react' ] } )
     .bundle()
-    .pipe(source('components.js'))
-    .pipe(gulp.dest('./public/js'))
+    .pipe(source('main.js'))
+    .pipe(gulp.dest('./static/js'))
 })
 
 gulp.task('cleanDistDirectory', function() {
@@ -58,12 +64,9 @@ gulp.task('jsxCompile', [ 'cleanDistDirectory' ], function () {
     .pipe(plumber())
     .pipe(debug({}))
     .pipe(babel({
-        presets: ['react', 'es2015']
+        presets: [ 'react', 'es2015' ]
     }))
 //    .pipe(cache.cache())
-    .pipe(rename(function (path) {
-      path.extname = '.js'
-    }))
     .pipe(gulp.dest('dist'))
 })
 
@@ -84,7 +87,9 @@ gulp.task('notifyMainStarted', function () {
   notify('Nest - Gulp - main', 'Starting build.')
 })
 
-gulp.task('main', [ 'notifyMainStarted', 'jsxCompile', 'jsCompile' ])
+gulp.task('main', [ 'notifyMainStarted', 'jsxCompile', 'jsCompile' ], function () {
+  notify('Nest - Gulp - main', 'Build done.')
+})
 
 gulp.task('notifyWatching', function () {
   notify('Nest - Gulp - watch', 'Starting watching.')
@@ -104,7 +109,13 @@ function stopChildren() {
   children.forEach(function (child) {
     console.log('Stopping child')
 
-    child.stop()
+    if (child.running) {
+      child.stop()
+
+      console.log('Stopped child')
+    } else {
+      console.log('Child already stopped')
+    }
   })
 }
 
@@ -116,15 +127,17 @@ process.on('SIGINT', function() {
   process.exit()
 })
 
-gulp.task('mainWatch', ['main'], function () {
+gulp.task('mainWatch', [ 'main' ], function () {
   stopChildren()
 
   runProcess('dist/PublicApi/App.js')
   runProcess('dist/Front/App.js')
   runProcess('dist/Worker/App.js')
   runProcess('dist/Scheduler/App.js')
+
+  notify('Nest - Gulp - mainWatch', 'Started processes.')
 })
 
-gulp.task('watch', [ 'notifyWatching', 'mainWatch' ], function () {
-  return gulp.watch(paths.src + '/**/*', [ 'mainWatch' ])
+gulp.task('watch', [ 'notifyWatching', 'mainWatch', 'browserify' ], function () {
+  return gulp.watch(paths.src + '/**/*', [ 'mainWatch', 'browserify' ])
 })

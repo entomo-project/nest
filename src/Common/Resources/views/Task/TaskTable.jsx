@@ -1,21 +1,23 @@
 'use strict';
 
 import React from 'react'
+import rp from 'request-promise'
+import { browserHistory } from 'react-router'
 
 class TaskRow extends React.Component {
   constructor(props) {
     super(props);
   }
 
-  handleClick() {
-    console.log('clicked')
+  handleClick(taskId) {
+    browserHistory.push('/task/' + taskId)
   }
 
   render() {
     const task = this.props.task;
 
     return (
-      <tr onClick={this.handleClick}>
+      <tr onClick = { this.handleClick.bind(this, task._id) }>
         <td>{ task._id }</td>
         <td>{ JSON.stringify(task.meta.components) }</td>
         <td>{ task.data.createdAt }</td>
@@ -32,14 +34,54 @@ class TaskRow extends React.Component {
 class TaskTable extends React.Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      tasks: []
+    }
+  }
+
+  componentDidMount() {
+    var page,
+      pageSize
+
+    const rawPage = this.props.page
+    const rawPageSize = this.props.pageSize
+
+    if (undefined === rawPage) {
+      page = 1
+    } else {
+      page = parseInt(rawPage, 10)
+    }
+
+    if (undefined === rawPageSize) {
+      pageSize = 10
+    } else {
+      pageSize = parseInt(rawPageSize, 10)
+    }
+
+    const from = (1 - page) * pageSize
+    const limit = pageSize
+
+    rp({
+      uri: 'http://dockerhost:3000/api/v1/task',
+      json: true,
+      qs: {
+        from: from,
+        limit: limit
+      }
+    }).then((tasks) => {
+      this.setState({
+        tasks: tasks
+      })
+    })
   }
 
   render() {
     const rows = [];
 
-    this.props.tasks.forEach(function (task) {
+    this.state.tasks.forEach(function (task) {
       rows.push(
-        <TaskRow key={task._id} task={task} />
+        <TaskRow key = { task._id } task = { task } />
       );
     });
 

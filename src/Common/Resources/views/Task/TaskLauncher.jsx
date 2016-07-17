@@ -1,12 +1,7 @@
 import React from 'react'
-import Layout from '../Layout'
 
-class TaskLauncher extends Layout {
-  constructor(props) {
-    super(props);
-  }
-
-  renderBodyContainerContent() {
+class TaskLauncher extends React.Component {
+  render() {
     return (
       <form>
         <div className="input-group">

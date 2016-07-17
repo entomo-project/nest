@@ -1,15 +1,21 @@
 import React from 'react'
-import Layout from '../Layout'
-import TaskTable from '../components/TaskTable'
+import TaskTable from './TaskTable'
 
-class TaskList extends Layout {
+class TaskList extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
   }
-  renderBodyContainerContent() {
+
+  render() {
     return (
-      <TaskTable tasks={this.props.tasks} />
-    );
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col-md-12">
+            <TaskTable />
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 
