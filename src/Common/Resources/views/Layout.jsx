@@ -24,6 +24,10 @@ class Layout extends React.Component {
           </div>
           <script
             type="text/javascript"
+            src="/static/js/vendor.js">
+          </script>
+          <script
+            type="text/javascript"
             src="/static/js/main.js">
           </script>
         </body>

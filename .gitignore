@@ -1,15 +1,10 @@
 /node_modules
-/bower_components
 
 /dist
 
 /app/logs/*
 !/app/logs/.keepme
 
-/build/*
-!/build/.keepme
+/static/*
+!/static/.keepme
 
-/public/*
-!/public/.keepme
-
-.gulp-cache

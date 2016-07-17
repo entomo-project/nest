@@ -8,22 +8,14 @@ const Cache = require('gulp-file-cache')
 const clean = require('gulp-clean')
 const browserify = require('browserify')
 const source = require('vinyl-source-stream')
-const glob = require('glob')
 const rp = require('request-promise')
 const forever = require('forever')
 const assert = require('assert')
 const process = require('process')
+const watchify = require('watchify')
+const extend = require('extend')
 
 const cache = new Cache()
-
-const paths = {
-  src: 'src',
-  browserify: {
-    entries: [
-      __dirname + '/dist/Front/Public/Main.js'
-    ]
-  }
-}
 
 function notify(title, message) {
   const uri = 'http://dockermachine:3333/notify'
@@ -39,17 +31,60 @@ function notify(title, message) {
   })
 }
 
-gulp.task('browserify', [ 'main' ], function () {
-  const br = browserify({
-    entries: paths.browserify.entries
+const paths = {
+  src: 'src',
+  browserify: {
+    entries: [
+      __dirname + '/dist/Front/Public/Main.js'
+    ],
+    destinationFolder: __dirname + '/static/js'
+  }
+}
+
+const vendorLibs = [
+  'react',
+  'react-dom',
+  'react-router',
+  'request-promise',
+  'js-beautify'
+]
+
+gulp.task('buildStaticJsVendor', function () {
+  const browserifyOpts = {
+    debug: false
+  }
+
+  const br = browserify(browserifyOpts)
+
+  vendorLibs.forEach(function (lib) {
+    br.require(require.resolve(lib), { expose: lib })
   })
 
+  //Fixing a bug related to request-promise require
   br.ignore('cls-bluebird')
 
-  return br.transform('babelify', { presets: [ 'es2015', 'react' ] } )
-    .bundle()
+  return br.bundle()
+    .pipe(source('vendor.js'))
+    .pipe(gulp.dest(paths.browserify.destinationFolder))
+})
+
+gulp.task('buildStaticJsMain', [ 'main' ], function () {
+  const browserifyOpts = {
+    entries: [
+      './dist/Front/Public/Main.js'
+    ],
+    debug: false
+  }
+
+  const br = browserify(browserifyOpts)
+
+  vendorLibs.forEach(function (lib) {
+    br.external(require.resolve(lib))
+  })
+
+  return br.bundle()
     .pipe(source('main.js'))
-    .pipe(gulp.dest('./static/js'))
+    .pipe(gulp.dest(paths.browserify.destinationFolder))
 })
 
 gulp.task('cleanDistDirectory', function() {
@@ -117,6 +152,8 @@ function stopChildren() {
       console.log('Child already stopped')
     }
   })
+
+  children.length = 0
 }
 
 process.on('SIGINT', function() {
@@ -138,6 +175,6 @@ gulp.task('mainWatch', [ 'main' ], function () {
   notify('Nest - Gulp - mainWatch', 'Started processes.')
 })
 
-gulp.task('watch', [ 'notifyWatching', 'mainWatch', 'browserify' ], function () {
-  return gulp.watch(paths.src + '/**/*', [ 'mainWatch', 'browserify' ])
+gulp.task('watch', [ 'notifyWatching', 'mainWatch', 'buildStaticJsMain' ], function () {
+  return gulp.watch(paths.src + '/**/*', [ 'mainWatch', 'buildStaticJsMain' ])
 })
