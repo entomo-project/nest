@@ -1,12 +1,10 @@
-'use strict';
-
 import React from 'react'
 import rp from 'request-promise'
 import { browserHistory } from 'react-router'
 
 class TaskRow extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
   }
 
   handleClick(taskId) {
@@ -14,7 +12,7 @@ class TaskRow extends React.Component {
   }
 
   render() {
-    const task = this.props.task;
+    const task = this.props.task
 
     return (
       <tr onClick = { this.handleClick.bind(this, task._id) }>
@@ -25,13 +23,13 @@ class TaskRow extends React.Component {
         <td>{ task.data.createdBy }</td>
         <td>{ task.data.maxDuration }</td>
       </tr>
-    );
+    )
   }
 }
 
 class TaskTable extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       tasks: []
@@ -83,8 +81,8 @@ class TaskTable extends React.Component {
       this.state.tasks.forEach(function (task) {
         rows.push(
           <TaskRow key = { task._id } task = { task } />
-        );
-      });
+        )
+      })
 
       table = <table className="table table-striped table-hover table-condensed">
         <thead>
@@ -105,7 +103,7 @@ class TaskTable extends React.Component {
       table = <div>No task</div>
     }
 
-    return (table);
+    return (table)
   }
 }
 

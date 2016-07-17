@@ -1,12 +1,10 @@
-'use strict';
-    
 var TaskType = function () {
-  return;
-};
+  return
+}
 
 TaskType.prototype = {
   id: null,
   name: null
-};
+}
 
-exports.TaskType = TaskType;
+exports.TaskType = TaskType

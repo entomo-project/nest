@@ -26,7 +26,7 @@ class Kernel {
   }
 
   get serviceContainer() {
-    return this._serviceContainer;
+    return this._serviceContainer
   }
 }
 

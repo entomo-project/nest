@@ -1,5 +1,3 @@
-'use strict';
-        
 exports.componentDefinition = {
   name: 'baseTask',
   component: {
@@ -11,4 +9,4 @@ exports.componentDefinition = {
     taskTypeId: null,
     taskTypeName: null
   }
-};
+}

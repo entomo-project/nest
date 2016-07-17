@@ -1,12 +1,10 @@
-'use strict';
-    
 var ResultFetcher = function () {
-  return;
-};
+  return
+}
 
 ResultFetcher.prototype = {
   id: null,
   scriptName: null
-};
+}
 
-exports.ResultFetcher = ResultFetcher;
+exports.ResultFetcher = ResultFetcher

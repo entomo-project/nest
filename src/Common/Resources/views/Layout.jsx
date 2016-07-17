@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 class Layout extends React.Component {
   constructor(props) {
-    super(props);
+    super(props)
   }
 
   render() {
@@ -32,8 +32,8 @@ class Layout extends React.Component {
           </script>
         </body>
       </html>
-    );
+    )
   }
 }
 
-export default Layout;
+export default Layout

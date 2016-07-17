@@ -58,7 +58,7 @@ class TaskLauncher extends React.Component {
           </button>
         </div>
       </form>
-    );
+    )
   }
 }
 

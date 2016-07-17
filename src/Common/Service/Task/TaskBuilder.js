@@ -1,5 +1,3 @@
-'use strict';
-
 var assert = require('assert')
 
 var foreach = require('foreach')
@@ -50,10 +48,10 @@ TaskBuilder.prototype.buildTask = function (options) {
     componentNames = [ 'base' ].concat(optionComponentNames)
   }
 
-  const components = [];
+  const components = []
 
   foreach(componentNames, function (origComponentName) {
-    var componentName;
+    var componentName
 
     componentName = origComponentName + 'Task'
 
