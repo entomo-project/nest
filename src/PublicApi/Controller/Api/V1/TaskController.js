@@ -69,23 +69,17 @@ class TaskController{
   }
 
   listTasks(req, res) {
-    const from = req.query.from
-    const limit = req.query.limit
-
-    assert.notStrictEqual(undefined, from, 'Missing from')
-    assert.notStrictEqual(undefined, limit, 'Missing limit')
+    const from = req.query.from === undefined ? 0 : parseInt(req.query.from, 10)
+    const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit, 10)
 
     this._mongoClient
       .collection('nest', 'task')
       .then(function (collection) {
-        // console.log(collection.find().sort({ 'data.createdAt': -1 })
-        // .limit(limit)
-        // .skip(from)
-
         collection
           .find()
           .sort({ 'data.createdAt': -1 })
-          .limit(1)
+          .skip(from)
+          .limit(limit)
           .toArray(function(err, docs) {
             assert.strictEqual(null, err)
 
