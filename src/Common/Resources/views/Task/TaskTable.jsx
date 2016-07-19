@@ -36,28 +36,8 @@ class TaskTable extends React.Component {
     }
   }
 
-  componentDidMount() {
-    var page,
-      pageSize
-
-    console.log(this.context.router.getCurrentQuery())
-
-    const rawPage = this.props.page
-    const rawPageSize = this.props.pageSize
-
-    if (undefined === rawPage) {
-      page = 1
-    } else {
-      page = parseInt(rawPage, 10)
-    }
-
-    if (undefined === rawPageSize) {
-      pageSize = 10
-    } else {
-      pageSize = parseInt(rawPageSize, 10)
-    }
-
-    const from = (1 - page) * pageSize
+  _updateTasks(page, pageSize) {
+    const from = (page - 1) * pageSize
     const limit = pageSize
 
     rp({
@@ -73,6 +53,22 @@ class TaskTable extends React.Component {
       })
     })
   }
+
+  componentWillReceiveProps(newProps) {
+    this._updateTasks(
+      newProps.page,
+      newProps.pageSize
+    )
+  }
+
+  componentWillMount() {
+    this._updateTasks(
+      this.props.page,
+      this.props.pageSize
+    )
+  }
+
+
 
   render() {
     const rows = []
@@ -107,10 +103,6 @@ class TaskTable extends React.Component {
 
     return (table)
   }
-}
-
-TaskTable.contextTypes = {
-  router: React.PropTypes.func
 }
 
 export default TaskTable

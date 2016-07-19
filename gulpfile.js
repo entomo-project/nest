@@ -18,17 +18,17 @@ const extend = require('extend')
 const cache = new Cache()
 
 function notify(title, message) {
-  const uri = 'http://dockermachine:3333/notify'
-
-  rp({
-    uri: uri,
-    method: 'POST',
-    body: {
-      title: title,
-      message: message
-    },
-    json: true
-  })
+  // const uri = 'http://dockermachine:3333/notify'
+  //
+  // rp({
+  //   uri: uri,
+  //   method: 'POST',
+  //   body: {
+  //     title: title,
+  //     message: message
+  //   },
+  //   json: true
+  // })
 }
 
 const paths = {
