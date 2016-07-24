@@ -1,13 +1,13 @@
 import assert from 'assert'
 
 class WorkerService {
-  constructor(logger, exec, webServerFactory, requestPromiseFactory, vm, port) {
+  constructor(logger, exec, webServerFactory, requestPromiseFactory, vm, webServers) {
     this._logger = logger
     this._exec = exec
     this._webServerFactory = webServerFactory
     this._requestPromiseFactory = requestPromiseFactory
     this._vm = vm
-    this._port = port
+    this._webServers = webServers
   }
 
   start() {
@@ -103,8 +103,10 @@ class WorkerService {
       res.send({ 'status': 'success' })
     })
 
-    app.listen(this._port, () => {
-      this._logger.info('Worker listening.', { port: this._port })
+    this._webServers.forEach((webServer) => {
+      app.listen(webServer.port, webServer.hostname, () => {
+        this._logger.info('Worker listening.', { port: webServer.port, hostname: webServer.hostname })
+      })
     })
   }
 }

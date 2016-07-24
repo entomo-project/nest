@@ -1,3 +1,5 @@
+'use strict'
+
 import kernel from './FrontKernel'
 import express from 'express'
 
@@ -16,8 +18,10 @@ app.use(
 
 container.get('app.controller.task').register(app)
 
-const port = container.getParameter('web_server_port')
+const webServers = container.getParameter('web_servers')
 
-app.listen(port, function () {
-  logger.info('Front app listening.', { port: port })
+webServers.forEach((webServer) => {
+  app.listen(webServer.port, webServer.hostname, () => {
+    logger.info('Front app listening.', { port: webServer.port, hostname: webServer.hostname })
+  })
 })

@@ -1,5 +1,4 @@
 import Kernel from '../Common/DependencyInjection/Kernel'
-import TaskController from '../Front/Controller/TaskController'
 import WebServerFactory from '../Common/Service/WebServerFactory'
 import MongoClient from '../Common/Service/Mongo/MongoClient'
 import requestPromiseFactory from 'request-promise'
@@ -9,7 +8,19 @@ class FrontKernel extends Kernel {
     super._configureServiceContainer()
 
     this.serviceContainer.setParameter('queue_size', 4)
-    this.serviceContainer.setParameter('web_server_port', 3002)
+    this.serviceContainer.setParameter(
+      'web_servers',
+      [
+        {
+          hostname: 'localhost',
+          port: 3002
+        },
+        {
+          hostname: '172.17.0.3',
+          port: 3002
+        }
+      ]
+    )
     this.serviceContainer.setParameter('mongo_url', 'mongodb://mongo:27017')
 
     const mongoClient = new MongoClient(this._serviceContainer.getParameter('mongo_url'))

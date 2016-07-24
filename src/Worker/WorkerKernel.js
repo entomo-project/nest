@@ -9,7 +9,19 @@ class WorkerKernel extends Kernel {
   _configureServiceContainer() {
     super._configureServiceContainer()
 
-    this.serviceContainer.setParameter('web_server_port', 3003)
+    this.serviceContainer.setParameter(
+      'web_servers',
+      [
+        {
+          hostname: 'localhost',
+          port: 3003
+        },
+        {
+          hostname: '172.17.0.3',
+          port: 3003
+        }
+      ]
+    )
 
     this.serviceContainer.set('app.service.vm', vm)
     this.serviceContainer.set('app.service.exec', exec)
@@ -22,7 +34,7 @@ class WorkerKernel extends Kernel {
       this.serviceContainer.get('app.service.web_server_factory'),
       this.serviceContainer.get('app.service.request_promise_factory'),
       this.serviceContainer.get('app.service.vm'),
-      this.serviceContainer.getParameter('web_server_port')
+      this.serviceContainer.getParameter('web_servers')
     )
 
     this.serviceContainer.set('app.service.worker', workerService)

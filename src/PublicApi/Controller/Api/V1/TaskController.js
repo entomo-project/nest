@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { ObjectID } from 'mongodb'
 
 class TaskController{
   constructor(mongoClient, taskBuilder) {
@@ -51,12 +52,12 @@ class TaskController{
       })
   }
 
-  getTask(req, res, id) {
+  getTask(req, res) {
     this._mongoClient
       .collection('nest', 'task')
       .then(function (collection) {
         collection
-          .find({ '_id': id })
+          .find({ '_id': ObjectID(req.params.id) })
           .limit(1)
           .next(function(err, doc){
             if (null === doc) {

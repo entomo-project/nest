@@ -2,12 +2,12 @@ import assert from 'assert'
 import { ObjectID } from 'mongodb'
 
 class SchedulerService {
-  constructor(logger, mongoClient, rp, webServerFactory, port, queueSize) {
+  constructor(logger, mongoClient, rp, webServerFactory, webServers, queueSize) {
     this._logger = logger
     this._mongoClient = mongoClient
     this._rp = rp
     this._webServerFactory = webServerFactory
-    this._port = port
+    this._webServers = webServers
     this._queueSize = queueSize
 
     this._elementsInQueue = 0
@@ -15,18 +15,20 @@ class SchedulerService {
   }
 
   start() {
-    this._logger.info('Scheduler started.');
+    this._logger.info('Scheduler started.')
 
-    setInterval(this._main.bind(this), 1000);
+    setInterval(this._main.bind(this), 1000)
 
-    const app = this._webServerFactory();
+    const app = this._webServerFactory()
 
     app.put('/api/v1/task/started', this._taskStarted.bind(this))
     app.put('/api/v1/task/stopped', this._taskStopped.bind(this))
 
-    app.listen(this._port, () => {
-      this._logger.info('Scheduler listening.', { port: this._port });
-    });
+    this._webServers.forEach((webServer) => {
+      app.listen(webServer.port, webServer.hostname, () => {
+        this._logger.info('Scheduler listening.', { port: webServer.port, hostname: webServer.hostname })
+      })
+    })
   }
 
   _taskStarted(req, res) {
@@ -128,6 +130,7 @@ class SchedulerService {
       .then(function (collection) {
         collection
           .find({ 'meta.components.': 'commandBased', 'data.startedAt': null })
+          .limit(8)
           .toArray(function(err, docs) {
             assert.strictEqual(null, err);
 

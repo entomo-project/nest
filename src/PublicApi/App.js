@@ -1,3 +1,5 @@
+'use strict'
+
 import kernel from './PublicApiKernel'
 
 const container = kernel.serviceContainer
@@ -20,8 +22,10 @@ app.use(function(req, res, next) {
 
 container.get('app.controller.api.v1.task').register(app)
 
-const port = container.getParameter('web_server_port')
+const webServers = container.getParameter('web_servers')
 
-app.listen(port, function () {
-  logger.info('Webservice app listening.', { port: port })
+webServers.forEach((webServer) => {
+  app.listen(webServer.port, webServer.hostname, () => {
+    logger.info('Webservice app listening.', { port: webServer.port, hostname: webServer.hostname })
+  })
 })

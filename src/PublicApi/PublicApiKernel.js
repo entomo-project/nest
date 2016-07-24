@@ -9,7 +9,19 @@ class PublicApiKernel extends Kernel {
     super._configureServiceContainer()
 
     this.serviceContainer.setParameter('mongo_url', 'mongodb://mongo:27017')
-    this.serviceContainer.setParameter('web_server_port', 3000)
+    this.serviceContainer.setParameter(
+      'web_servers',
+      [
+        {
+          hostname: 'localhost',
+          port: 3000
+        },
+        {
+          hostname: '172.17.0.3',
+          port: 3000
+        }
+      ]
+    )
 
     const mongoClient = new MongoClient(this._serviceContainer.getParameter('mongo_url'))
     this.serviceContainer.set('app.service.mongo.client', mongoClient)
