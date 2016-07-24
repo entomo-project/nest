@@ -8,17 +8,30 @@ class Kernel {
   }
 
   _configureServiceContainer() {
+    const consoleTransport = new (winston.transports.Console)({
+      colorize: true,
+      prettyPrint: true,
+      timestamp: true,
+      showLevel: true,
+      align: true,
+      stringify: true
+    })
+
     const logger = new Logger({
       transports: [
-        new (winston.transports.Console)()
+        consoleTransport
       ]
     })
+
+    logger.handleExceptions([
+      consoleTransport
+    ])
 
     // new (winston.transports.File)({ filename: 'somefile.log' })
 
     logger.level = 'debug'
 
-    this.serviceContainer.set('app.logger', logger)
+    this.serviceContainer.set('app.service.logger', logger)
   }
 
   boot() {

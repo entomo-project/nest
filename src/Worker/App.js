@@ -1,7 +1,12 @@
-import workerKernel from './WorkerKernel'
+import kernel from './WorkerKernel'
+import BaseApp from '../Common/BaseApp'
 
-const container = workerKernel.serviceContainer
+const baseApp = new BaseApp(kernel)
 
-const worker = container.get('app.service.worker')
+baseApp
+  .init()
+  .then((container) => {
+    const worker = container.get('app.service.worker')
 
-worker.start()
+    worker.start()
+  }).done()

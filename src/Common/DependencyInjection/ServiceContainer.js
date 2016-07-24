@@ -1,12 +1,19 @@
+import ServiceDefinition from './ServiceDefinition'
+
 class ServiceContainer  {
   constructor() {
     this._servicesByName = {}
+    this._serviceDefinitionsByName = {}
     this._parametersByName = {}
   }
 
   get(serviceName) {
     if (undefined === this._servicesByName[serviceName]) {
-      throw new Error('Undefined service "' + serviceName + '"')
+      if (undefined === this._serviceDefinitionsByName[serviceName]) {
+        throw new Error('Undefined service "' + serviceName + '"')
+      } else {
+        this._servicesByName[serviceName] = this._serviceDefinitionsByName[serviceName].instanciate(this)
+      }
     }
 
     return this._servicesByName[serviceName]
@@ -14,6 +21,12 @@ class ServiceContainer  {
 
   set(serviceName, service) {
     this._servicesByName[serviceName] = service
+
+    return this
+  }
+
+  setDefinition(serviceName, serviceDefinition) {
+    this._serviceDefinitionsByName[serviceName] = serviceDefinition
 
     return this
   }

@@ -168,7 +168,7 @@ gulp.task('mainWatch', [ 'main' ], function () {
   stopChildren()
 
   runProcess('dist/PublicApi/App.js')
-  runProcess('dist/Front/App.js')
+  runProcess('dist/Front/App.js run --host localhost:3001 --host 172.17.0.3:3001')
   runProcess('dist/Worker/App.js')
   runProcess('dist/Scheduler/App.js')
 

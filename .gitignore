@@ -1,5 +1,7 @@
 /node_modules
 
+/build/*
+
 /dist
 
 /app/logs/*
@@ -7,4 +9,3 @@
 
 /static/*
 !/static/.keepme
-
