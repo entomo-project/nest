@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const assert = require('assert')
 const spawn = require('child_process').spawn
 const config = require('./deploy.config.json')
