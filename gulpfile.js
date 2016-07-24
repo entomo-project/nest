@@ -167,10 +167,10 @@ process.on('SIGINT', function() {
 gulp.task('mainWatch', [ 'main' ], function () {
   stopChildren()
 
-  runProcess('dist/PublicApi/App.js')
+  runProcess('dist/PublicApi/App.js run --host localhost:3000 --host 172.17.0.3:3000')
   runProcess('dist/Front/App.js run --host localhost:3001 --host 172.17.0.3:3001')
-  runProcess('dist/Worker/App.js')
-  runProcess('dist/Scheduler/App.js')
+  runProcess('dist/Worker/App.js run --host localhost:3003 --host 172.17.0.3:3003')
+  runProcess('dist/Scheduler/App.js run --host localhost:3002 --host 172.17.0.3:3002')
 
   notify('Nest - Gulp - mainWatch', 'Started processes.')
 })

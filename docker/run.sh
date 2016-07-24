@@ -20,6 +20,7 @@ docker run \
   -d \
   -p 3000:3000 \
   -p 3001:3001 \
+  -p 3002:3002 \
   -p 3003:3003 \
   -p 2222:22 \
   --volumes-from entomo-project-nest-data \

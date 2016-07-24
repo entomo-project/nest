@@ -1,17 +1,13 @@
 import kernel from './SchedulerKernel'
-import SchedulerService from './Service/SchedulerService'
+import BaseApp from '../Common/BaseApp'
 
-const container = kernel.serviceContainer
+const app = new BaseApp(kernel)
 
-const logger = container.get('app.logger')
+app
+  .init()
+  .then((container) => {
+    const schedulerService = container.get('app.service.scheduler')
 
-const schedulerService = new SchedulerService(
-  logger,
-  container.get('app.service.mongo.client'),
-  container.get('app.service.request_promise_factory'),
-  container.get('app.service.web_server_factory'),
-  container.getParameter('web_servers'),
-  container.getParameter('queue_size')
-);
-
-schedulerService.start()
+    schedulerService.start()
+  })
+  .done()
