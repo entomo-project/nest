@@ -132,8 +132,8 @@ gulp.task('notifyWatching', function () {
 
 const children = []
 
-function runProcess(command) {
-  const child = new (forever.Monitor)(command)
+function runProcess(command, options) {
+  const child = new (forever.Monitor)(command, options)
 
   children.push(child)
 
@@ -167,10 +167,34 @@ process.on('SIGINT', function() {
 gulp.task('mainWatch', [ 'main' ], function () {
   stopChildren()
 
-  runProcess('dist/PublicApi/App.js run --host localhost:3000 --host 172.17.0.3:3000')
-  runProcess('dist/Front/App.js run --host localhost:3001 --host 172.17.0.3:3001')
-  runProcess('dist/Worker/App.js run --host localhost:3003 --host 172.17.0.3:3003')
-  runProcess('dist/Scheduler/App.js run --host localhost:3002 --host 172.17.0.3:3002')
+  function makeArgs(port) {
+    return {
+      args: [
+        'run',
+        '--host',
+        'localhost:'+port,
+        '--host',
+        '172.17.0.3:'+port
+      ]
+    }
+  }
+
+  runProcess(
+    'dist/PublicApi/App.js',
+    makeArgs(3000)
+  )
+  runProcess(
+    'dist/Front/App.js',
+    makeArgs(3001)
+  )
+  runProcess(
+    'dist/Worker/App.js',
+    makeArgs(3003)
+  )
+  runProcess(
+    'dist/Scheduler/App.js',
+    makeArgs(3002)
+  )
 
   notify('Nest - Gulp - mainWatch', 'Started processes.')
 })

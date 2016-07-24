@@ -43,30 +43,32 @@ class TaskController{
 
     this._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .insertOne(task)
-          .then(function() {
+          .then(() => {
             res.send({ status: 'success' })
-          })
-      })
+          }).done()
+      }).done()
   }
 
   getTask(req, res) {
     this._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .find({ '_id': ObjectID(req.params.id) })
           .limit(1)
-          .next(function(err, doc){
+          .next()
+          .then((doc) => {
             if (null === doc) {
               res.status(404).send({ status: 'not_found' })
             } else {
               res.send(doc)
             }
           })
-      })
+          .done()
+      }).done()
   }
 
   listTasks(req, res) {
@@ -75,18 +77,18 @@ class TaskController{
 
     this._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .find()
           .sort({ 'data.createdAt': -1 })
           .skip(from)
           .limit(limit)
-          .toArray(function(err, docs) {
-            assert.strictEqual(null, err)
-
+          .toArray()
+          .then((docs) => {
             res.send(docs)
           })
-      })
+          .done()
+      }).done()
   }
 
   register(app) {

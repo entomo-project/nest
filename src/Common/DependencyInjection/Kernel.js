@@ -27,8 +27,6 @@ class Kernel {
       consoleTransport
     ])
 
-    // new (winston.transports.File)({ filename: 'somefile.log' })
-
     logger.level = 'debug'
 
     this.serviceContainer.set('app.service.logger', logger)

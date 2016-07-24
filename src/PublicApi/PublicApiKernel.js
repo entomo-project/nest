@@ -13,6 +13,7 @@ class PublicApiKernel extends Kernel {
     this.serviceContainer.setParameter('mongo_url', 'mongodb://mongo:27017')
 
     const mongoClient = new MongoClient(this._serviceContainer.getParameter('mongo_url'))
+
     this.serviceContainer.set('app.service.mongo.client', mongoClient)
 
     const taskBuilder = new TaskBuilder()
@@ -27,14 +28,19 @@ class PublicApiKernel extends Kernel {
 
     this.serviceContainer.set('app.controller.api.v1.task', taskController)
 
-    this.serviceContainer.setDefinition('app.service.public_api', new ServiceDefinition((container) => {
-      return new PublicApi(
-        container.get('app.service.logger'),
-        container.get('app.service.web_server_factory'),
-        container.get('app.controller.api.v1.task'),
-        container.getParameter('app.web_servers')
+    this.serviceContainer.setDefinition(
+      'app.service.public_api',
+      new ServiceDefinition(
+        (container) => {
+          return new PublicApi(
+            container.get('app.service.logger'),
+            container.get('app.service.web_server_factory'),
+            container.get('app.controller.api.v1.task'),
+            container.getParameter('app.web_servers')
+          )
+        }
       )
-    }))
+    )
   }
 }
 

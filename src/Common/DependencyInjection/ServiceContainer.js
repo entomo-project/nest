@@ -1,5 +1,3 @@
-import ServiceDefinition from './ServiceDefinition'
-
 class ServiceContainer  {
   constructor() {
     this._servicesByName = {}
