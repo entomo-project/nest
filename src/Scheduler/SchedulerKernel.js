@@ -13,6 +13,7 @@ class FrontKernel extends Kernel {
     this.serviceContainer.setParameter('mongo_url', 'mongodb://mongo:27017')
 
     const mongoClient = new MongoClient(
+      this._serviceContainer.get('app.service.logger'),
       this._serviceContainer.getParameter('mongo_url')
     )
     this.serviceContainer.set('app.service.mongo.client', mongoClient)

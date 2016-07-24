@@ -48,8 +48,10 @@ class TaskController{
           .insertOne(task)
           .then(() => {
             res.send({ status: 'success' })
-          }).done()
-      }).done()
+          })
+          .done()
+      })
+      .done()
   }
 
   getTask(req, res) {
@@ -68,7 +70,8 @@ class TaskController{
             }
           })
           .done()
-      }).done()
+      })
+      .done()
   }
 
   listTasks(req, res) {
@@ -88,7 +91,8 @@ class TaskController{
             res.send(docs)
           })
           .done()
-      }).done()
+      })
+      .done()
   }
 
   register(app) {

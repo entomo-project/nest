@@ -3,11 +3,12 @@ import assert from 'assert'
 import Promise from 'promise'
 
 class MongoClient {
-  constructor(url) {
+  constructor(logger, url) {
     assert.notStrictEqual(null, url)
     assert.notStrictEqual('', url)
     assert.notStrictEqual(undefined, url)
 
+    this._logger = logger
     this._url = url
     this._db = null
   }
@@ -22,14 +23,20 @@ class MongoClient {
     return new Promise(
       (resolve) => {
         if (null === this._db) {
+          this._logger.debug('Instanciating new connection.')
+
           RawMongoClient.connect(fullUrl, { promiseLibrary: Promise }, (err, db) => {
             assert.equal(null, err)
 
             this._db = db
 
+            this._logger.debug('Done instanciating new connection.')
+
             resolve(this._db)
           })
         } else {
+          this._logger.debug('Reusing previous connection.')
+
           resolve(this._db)
         }
       }

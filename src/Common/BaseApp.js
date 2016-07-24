@@ -7,7 +7,7 @@ class BaseApp {
   }
 
   init() {
-    function collect(val, values) {
+    const collect = (val, values) => {
       values.push(val)
 
       return values

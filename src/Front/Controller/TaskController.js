@@ -4,7 +4,7 @@ import Layout from  '../../Common/Resources/views/Layout'
 
 class TaskController {
   register(app) {
-    app.get('*', function (req, res) {
+    app.get('*', (req, res) => {
       res.send(
         ReactDOMServer.renderToStaticMarkup(
           React.createElement(Layout)

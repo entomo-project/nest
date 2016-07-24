@@ -2,13 +2,13 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import timeout from 'connect-timeout'
 
-function haltOnTimedout(req, res, next){
+const haltOnTimedout = (req, res, next) => {
   if (!req.timedout) {
     next()
   }
 }
 
-function WebServerFactory() {
+const WebServerFactory = () => {
   const app = express()
 
   //FIXME not in prod?

@@ -64,6 +64,7 @@ class WorkerService {
                 ._logger
                 .error('Worker could not notify nest that task is done.', { options: notifyTaskDoneOptions })
             })
+            .done()
         }
 
         const sandbox = {
@@ -99,6 +100,7 @@ class WorkerService {
             ._logger
             .error('Worker could not notify nest that task has started.', info)
         })
+        .done()
 
       res.send({ 'status': 'success' })
     })

@@ -8,6 +8,5 @@ baseApp
     const frontApp = container.get('app.service.front_app')
 
     frontApp.start()
-  }).catch(() => {
-    kernel.serviceContainer.get('app.service.logger').error('Error starting app.')
   })
+  .done()

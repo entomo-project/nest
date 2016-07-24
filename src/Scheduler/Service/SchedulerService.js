@@ -32,29 +32,37 @@ class SchedulerService {
   }
 
   _taskStarted(req, res) {
-    const that = this
-
     assert.notStrictEqual(null, req.body.taskId)
     assert.notStrictEqual(undefined, req.body.taskId)
     assert.notStrictEqual('', req.body.taskId)
 
     this._logger.info('Notified by scheduler that task has started.', { _id: req.body.taskId })
 
-    this._mongoClient
+    this
+      ._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .update({ _id: ObjectID(req.body.taskId) }, { $set: { 'data.startedAt': new Date() } })
-          .then(function() {
-            that._logger.info('Marked task as started.', { _id: req.body.taskId });
+          .then((data) => {
+            if (data.result.nModified !== 1) {
+              res.status(400).send({ status: 'error' })
+
+              this._logger.error('Error marking task as started: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+
+              return
+            }
+
+            this._logger.info('Marked task as started.', { _id: req.body.taskId });
 
             res.send({ status: 'success' })
           })
+          .done()
       })
+      .done()
   }
 
   _taskStopped(req, res) {
-    const that = this
     const taskId = req.body.taskId
 
     assert.notStrictEqual(null, taskId)
@@ -72,22 +80,23 @@ class SchedulerService {
             if (data.result.nModified !== 1) {
               res.status(400).send({ status: 'error' })
 
-              this._logger.error('Expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+              this._logger.error('Error marking task as done: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
 
               return
             }
 
-            that._logger.info('Marked task as done.', { _id: taskId });
+            this._logger.info('Marked task as done.', { _id: taskId });
 
-            that._removeTaskFromQueue(taskId)
+            this._removeTaskFromQueue(taskId)
 
             res.send({ status: 'success' })
           })
+          .done()
       })
+      .done()
   }
 
   _addToQueueIfPossible(task) {
-    const that = this
     const _id = task._id
 
     if (undefined === this._queue[_id] && this._elementsInQueue < this._queueSize) {
@@ -98,47 +107,49 @@ class SchedulerService {
 
       this._logger.info('Notifying worker.')
 
-      that._rp({
-        method: 'POST',
-        uri: 'http://localhost:3003/do',
-        body: {
-          taskId: _id,
-          command: task.data.command
-        },
-        json: true
-      }).then(function () {
-        that._logger.info('Worker notified.');
-      }).catch(function () {
-        that._logger.error('Could not notify worker.');
-      });
-    } else {
-      // that._logger.debug('Task queue is full.')
+      this
+        ._rp({
+          method: 'POST',
+          uri: 'http://localhost:3003/do',
+          body: {
+            taskId: _id,
+            command: task.data.command
+          },
+          json: true
+        })
+        .then(() => {
+          this._logger.info('Worker notified.')
+        })
+        .catch((e) => {
+          this._logger.error('Could not notify worker.', { error: e })
+        })
+        .done()
     }
   }
 
   _removeTaskFromQueue(taskId) {
-    delete this._queue[taskId];
+    delete this._queue[taskId]
     this._elementsInQueue -= 1
   }
 
   _main() {
-    const that = this
-
     //Limit 4
-    this._mongoClient
+    this
+      ._mongoClient
       .collection('nest', 'task')
-      .then(function (collection) {
+      .then((collection) => {
         collection
           .find({ 'meta.components.': 'commandBased', 'data.startedAt': null })
           .limit(8)
-          .toArray(function(err, docs) {
-            assert.strictEqual(null, err);
-
-            docs.forEach(function (doc) {
-              that._addToQueueIfPossible(doc)
+          .toArray()
+          .then((docs) => {
+            docs.forEach((doc) => {
+              this._addToQueueIfPossible(doc)
             })
           })
+          .done()
       })
+      .done()
   }
 }
 
