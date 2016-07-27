@@ -1,5 +1,5 @@
 import program from 'commander'
-import Promise from 'promise'
+import Promise from 'bluebird'
 
 class BaseApp {
   constructor(kernel) {

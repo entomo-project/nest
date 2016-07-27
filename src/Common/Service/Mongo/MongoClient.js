@@ -1,6 +1,6 @@
 import { MongoClient as RawMongoClient } from 'mongodb'
 import assert from 'assert'
-import Promise from 'promise'
+import Promise from 'bluebird'
 
 class MongoClient {
   constructor(logger, url) {
