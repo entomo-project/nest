@@ -1,4 +1,5 @@
 import assert from 'assert'
+import _ from 'underscore'
 
 class WorkerService {
   constructor(logger, spawn, webServerFactory, requestPromiseFactory, vm, webServers) {
@@ -11,7 +12,17 @@ class WorkerService {
   }
 
   _makeDone(taskId, output) {
+    var doneOnce = false
+
     return (error) => {
+      if (doneOnce) {
+        this._logger.error('Should no call "done" method more than once, returning immediately.', { taskId: taskId })
+
+        return
+      }
+
+      doneOnce = true
+
       const body = {
         taskId: taskId,
         output: {
@@ -21,8 +32,22 @@ class WorkerService {
         }
       }
 
-      if (undefined !== error) {
-        body.error = error
+      function errorToPlainObject(err) {
+        const plainObject = {}
+
+        if (undefined !== err.constructor && undefined !== err.constructor.name) {
+          plainObject.className = err.constructor.name
+        }
+
+        Object.getOwnPropertyNames(err).forEach((key) => {
+          plainObject[key] = err[key]
+        })
+
+        return plainObject
+      }
+
+      if (undefined !== error && _.isObject(error)) {
+        body.error = errorToPlainObject(error)
       }
 
       const notifyTaskDoneOptions = {
@@ -88,8 +113,8 @@ class WorkerService {
             resolve(exitCode)
           })
         })
-      } catch (e) {
-        done(e)
+      } catch (err) {
+        done(err)
       }
     }
   }
@@ -127,7 +152,6 @@ class WorkerService {
         const done = this._makeDone(req.body.taskId, output)
 
         const sandbox = {
-          globalVar: 1,
           done: done,
           console: console,
           executeCommand: this._makeExecuteCommand(output, done),
@@ -138,10 +162,8 @@ class WorkerService {
 
         try {
           this._vm.runInContext(req.body.command, sandbox)
-        } catch (e) {
-          done(e)
-
-          throw e
+        } catch (err) {
+          done(err)
         }
       }
 

@@ -1,4 +1,4 @@
-<?
+<?php
 
 echo 'Start'.PHP_EOL;
 
