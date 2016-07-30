@@ -64,18 +64,30 @@ class SchedulerService {
 
   _taskStopped(req, res) {
     const taskId = req.body.taskId
+    const output = req.body.output
+    const workerError = req.body.error
 
     assert.notStrictEqual(null, taskId)
     assert.notStrictEqual(undefined, taskId)
     assert.notStrictEqual('', taskId)
+    assert.notStrictEqual(undefined, output)
 
-    this._logger.info('Notified by worker that task is done.', { _id: taskId });
+    this._logger.info('Notified by worker that task is done.', { _id: taskId, output: output });
+
+    const $set = {
+      'data.stoppedAt': new Date(),
+      'data.output': output
+    }
+
+    if (undefined !== workerError) {
+      $set.workerError = workerError
+    }
 
     this._mongoClient
       .collection('nest', 'task')
       .then((collection) => {
         collection
-          .update({ _id: ObjectID(taskId) }, { $set: { 'data.stoppedAt': new Date() } })
+          .update({ _id: ObjectID(taskId) }, { $set: $set })
           .then((data) => {
             if (data.result.nModified !== 1) {
               res.status(400).send({ status: 'error' })

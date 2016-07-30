@@ -34,4 +34,7 @@ RUN \
 RUN echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc
 RUN echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
 
+RUN apt-get install -y \
+  php5-cli
+
 ENV HOME /root

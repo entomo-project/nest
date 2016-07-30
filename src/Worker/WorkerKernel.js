@@ -1,4 +1,4 @@
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 import vm from 'vm'
 import requestPromiseFactory from 'request-promise'
 import Kernel from '../Common/DependencyInjection/Kernel'
@@ -11,7 +11,7 @@ class WorkerKernel extends Kernel {
     super._configureServiceContainer()
 
     this.serviceContainer.set('app.service.vm', vm)
-    this.serviceContainer.set('app.service.exec', exec)
+    this.serviceContainer.set('app.service.spawn', spawn)
     this.serviceContainer.set('app.service.request_promise_factory', requestPromiseFactory)
     this.serviceContainer.set('app.service.web_server_factory', WebServerFactory)
 
@@ -21,7 +21,7 @@ class WorkerKernel extends Kernel {
         (container) => {
           return new WorkerService(
             container.get('app.service.logger'),
-            container.get('app.service.exec'),
+            container.get('app.service.spawn'),
             container.get('app.service.web_server_factory'),
             container.get('app.service.request_promise_factory'),
             container.get('app.service.vm'),

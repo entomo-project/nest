@@ -1,13 +1,97 @@
 import assert from 'assert'
 
 class WorkerService {
-  constructor(logger, exec, webServerFactory, requestPromiseFactory, vm, webServers) {
+  constructor(logger, spawn, webServerFactory, requestPromiseFactory, vm, webServers) {
     this._logger = logger
-    this._exec = exec
+    this._spawn = spawn
     this._webServerFactory = webServerFactory
     this._requestPromiseFactory = requestPromiseFactory
     this._vm = vm
     this._webServers = webServers
+  }
+
+  _makeDone(taskId, output) {
+    return (error) => {
+      const body = {
+        taskId: taskId,
+        output: {
+          stdOut: output.stdOut,
+          stdErr: output.stdErr,
+          exitCode: output.exitCode
+        }
+      }
+
+      if (undefined !== error) {
+        body.error = error
+      }
+
+      const notifyTaskDoneOptions = {
+        method: 'PUT',
+        uri: 'http://localhost:3002/api/v1/task/stopped',
+        body: body,
+        json: true
+      }
+
+      this
+        ._requestPromiseFactory(notifyTaskDoneOptions)
+        .then(() => {
+          this
+            ._logger
+            .info('Worker done notifying nest that task is done.', { options: notifyTaskDoneOptions })
+        })
+        .catch(() => {
+          this
+            ._logger
+            .error('Worker could not notify nest that task is done.', { options: notifyTaskDoneOptions })
+        })
+        .done()
+    }
+  }
+
+  _makeExecuteCommand(output, done) {
+    return (command, args) => {
+      try {
+        const process = this._spawn(
+          command,
+          args,
+          {
+            shell: '/bin/bash'
+          }
+        )
+
+        process.stdout.on('data', (data) => {
+          if (undefined === output.stdOut) {
+            output.stdOut = '' + data
+          } else {
+            output.stdOut += data
+          }
+        })
+
+        process.stderr.on('data', (data) => {
+          if (undefined === output.stdErr) {
+            output.stdErr = '' + data
+          } else {
+            output.stdErr += data
+          }
+        })
+
+        return new Promise((resolve, reject) => {
+          process.on('error', (err) => {
+            done(err)
+
+            reject(err)
+          })
+
+          process.on('close', (exitCode) => {
+            output.exitCode = exitCode
+
+            resolve(exitCode)
+          })
+        })
+      } catch (e) {
+        done(e)
+      }
+    }
   }
 
   start() {
@@ -34,44 +118,19 @@ class WorkerService {
       const onTaskStartNotified = () => {
         this._logger.info('Worker done notifying nest that task has started.', { options: notifyTaskStartedOptions })
 
-        const done = (error) => {
-          const body = {
-            taskId: req.body.taskId
-          }
-
-          if (undefined !== error) {
-            body.error = error
-          }
-
-          const notifyTaskDoneOptions = {
-            method: 'PUT',
-            uri: 'http://localhost:3002/api/v1/task/stopped',
-            body: {
-              taskId: req.body.taskId
-            },
-            json: true
-          }
-
-          this
-            ._requestPromiseFactory(notifyTaskDoneOptions)
-            .then(() => {
-              this
-                ._logger
-                .info('Worker done notifying nest that task is done.', { options: notifyTaskDoneOptions })
-            })
-            .catch(() => {
-              this
-                ._logger
-                .error('Worker could not notify nest that task is done.', { options: notifyTaskDoneOptions })
-            })
-            .done()
+        const output = {
+          stdOut: undefined,
+          stdErr: undefined,
+          exitCode: undefined
         }
+
+        const done = this._makeDone(req.body.taskId, output)
 
         const sandbox = {
           globalVar: 1,
           done: done,
           console: console,
-          exec: this._exec,
+          executeCommand: this._makeExecuteCommand(output, done),
           assert: assert
         }
 
