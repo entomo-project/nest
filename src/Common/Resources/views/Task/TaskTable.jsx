@@ -124,9 +124,9 @@ class TaskTable extends React.Component {
 
     return (
       <div>
-        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} />
+        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} pageSize={this.props.pageSize} />
         {table}
-        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} />
+        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} pageSize={this.props.pageSize} />
       </div>
     )
   }

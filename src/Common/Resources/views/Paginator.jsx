@@ -6,18 +6,32 @@ class Paginator extends React.Component {
     super(props)
   }
 
-  _makeLink(page) {
-    if (1 === page) {
-      return '/task'
+  _makeLink(page, pageSize) {
+    const params = {}
+
+    if (page > 1) {
+      params.page = page
     }
 
-    return '/task?page=' + page
+    if (undefined !== pageSize) {
+      params.pageSize = pageSize
+    } else {
+      if (this.props.pageSize > 10) {
+        params.pageSize = this.props.pageSize
+      }
+    }
+
+    return browserHistory.createPath({ pathname: '/task', query: params })
+  }
+
+  _navigateToPage(page, pageSize) {
+    browserHistory.push(this._makeLink(page, pageSize))
   }
 
   _handleClick(page, event) {
     event.preventDefault()
 
-    browserHistory.push(this._makeLink(page))
+    this._navigateToPage(page)
   }
 
   _getClassName(page) {
@@ -52,9 +66,22 @@ class Paginator extends React.Component {
     return this.props.currentPage >= this.props.totalPages
   }
 
+  _handlePageSizeChange(event) {
+    this._navigateToPage(1, event.target.value)
+  }
+
   render() {
     return (
       <div className="pagination-wrapper">
+        <div className="page-size-selector">
+          Page size&nbsp;
+          <select value={this.props.pageSize} onChange={this._handlePageSizeChange.bind(this)}>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
         <ul className="pagination">
           {(() => {
             const currentPage = this.props.currentPage
