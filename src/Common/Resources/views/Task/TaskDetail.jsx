@@ -17,13 +17,6 @@ class TaskDetail extends React.Component {
   componentDidMount() {
     const taskId = this.props.routeParams.id
 
-    this.setState({
-      task: {
-        _id: taskId
-      },
-      taskAsString: ''
-    })
-
     rp({
       uri: 'http://dockerhost:3000/api/v1/task/' + taskId,
       json: true,

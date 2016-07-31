@@ -1,5 +1,6 @@
 import assert from 'assert'
 import { ObjectID } from 'mongodb'
+import Promise from 'bluebird'
 
 class TaskController{
   constructor(mongoClient, taskBuilder) {
@@ -81,16 +82,35 @@ class TaskController{
     this._mongoClient
       .collection('nest', 'task')
       .then((collection) => {
-        collection
-          .find()
-          .sort({ 'data.createdAt': -1 })
-          .skip(from)
-          .limit(limit)
-          .toArray()
-          .then((docs) => {
-            res.send(docs)
+        var result
+        var total
+
+        Promise.all(
+          [
+            collection
+              .find()
+              .sort({ 'data.createdAt': -1 })
+              .skip(from)
+              .limit(limit)
+              .toArray()
+              .then((docs) => {
+                result = docs
+              }),
+            collection
+              .count()
+              .then((iTotal) => {
+                total = iTotal
+              })
+          ]
+        ).then(() => {
+          res.send({
+            result: result,
+            info: {
+              total: total,
+              filteredTotal: total //TODO
+            }
           })
-          .done()
+        }).done()
       })
       .done()
   }

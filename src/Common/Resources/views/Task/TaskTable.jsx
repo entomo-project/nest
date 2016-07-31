@@ -2,6 +2,7 @@ import React from 'react'
 import rp from 'request-promise'
 import { browserHistory } from 'react-router'
 import TaskHelper from './TaskHelper'
+import Paginator from '../Paginator'
 
 class TaskRow extends React.Component {
   constructor(props) {
@@ -16,7 +17,7 @@ class TaskRow extends React.Component {
     const task = this.props.task
 
     return (
-      <tr onClick = { this.handleClick.bind(this, task._id) } className={TaskHelper.getTaskClassName(task)}>
+      <tr onClick={this.handleClick.bind(this, task._id)} className={TaskHelper.getTaskClassName(task)}>
         <td>{
           (() => {
             const taskClassName = TaskHelper.getTaskClassName(task)
@@ -67,9 +68,10 @@ class TaskTable extends React.Component {
         from: from,
         limit: limit
       }
-    }).then((tasks) => {
+    }).then((data) => {
       this.setState({
-        tasks: tasks
+        tasks: data.result,
+        totalPages: Math.ceil(data.info.total / pageSize)
       })
     })
   }
@@ -94,7 +96,7 @@ class TaskTable extends React.Component {
     var table
 
     if (this.state.tasks.length > 0) {
-      this.state.tasks.forEach(function (task) {
+      this.state.tasks.forEach((task) => {
         rows.push(
           <TaskRow key = { task._id } task = { task } />
         )
@@ -120,7 +122,13 @@ class TaskTable extends React.Component {
       table = <div>No task</div>
     }
 
-    return (table)
+    return (
+      <div>
+        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} />
+        {table}
+        <Paginator totalPages={this.state.totalPages} currentPage={this.props.page} />
+      </div>
+    )
   }
 }
 
