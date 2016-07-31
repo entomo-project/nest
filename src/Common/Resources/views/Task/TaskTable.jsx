@@ -1,6 +1,7 @@
 import React from 'react'
 import rp from 'request-promise'
 import { browserHistory } from 'react-router'
+import TaskHelper from './TaskHelper'
 
 class TaskRow extends React.Component {
   constructor(props) {
@@ -15,7 +16,26 @@ class TaskRow extends React.Component {
     const task = this.props.task
 
     return (
-      <tr onClick = { this.handleClick.bind(this, task._id) }>
+      <tr onClick = { this.handleClick.bind(this, task._id) } className={TaskHelper.getTaskClassName(task)}>
+        <td>{
+          (() => {
+            const taskClassName = TaskHelper.getTaskClassName(task)
+
+            if ('has-error' === taskClassName) {
+              return (
+                <i className="fa fa-warning" />
+              )
+            } else if ('has-warning' === taskClassName) {
+              return (
+                <i className="fa fa-warning" />
+              )
+            } else if (null !== task.data.stoppedAt) {
+              return (
+                <i className="fa fa-check" />
+              )
+            }
+          })()
+        }</td>
         <td>{ task.data.taskTypeName }</td>
         <td>{ task.data.createdAt }</td>
         <td>{ task.data.startedAt }</td>
@@ -68,8 +88,6 @@ class TaskTable extends React.Component {
     )
   }
 
-
-
   render() {
     const rows = []
 
@@ -82,9 +100,10 @@ class TaskTable extends React.Component {
         )
       })
 
-      table = <table className="table table-striped table-hover table-condensed">
+      table = <table className="table table-hover table-condensed">
         <thead>
         <tr>
+          <th></th>
           <th>Task type name</th>
           <th>Created at</th>
           <th>Started at</th>
