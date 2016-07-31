@@ -37,7 +37,7 @@ class TaskRow extends React.Component {
             }
           })()
         }</td>
-        <td>{ task.data.taskTypeName }</td>
+        <td>{ task.data.taskTypeId }</td>
         <td>{ task.data.createdAt }</td>
         <td>{ task.data.startedAt }</td>
         <td>{ task.data.stoppedAt }</td>
@@ -106,7 +106,7 @@ class TaskTable extends React.Component {
         <thead>
         <tr>
           <th></th>
-          <th>Task type name</th>
+          <th>Task type id</th>
           <th>Created at</th>
           <th>Started at</th>
           <th>Stopped at</th>

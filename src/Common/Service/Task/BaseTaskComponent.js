@@ -6,7 +6,6 @@ exports.componentDefinition = {
     startedAt: null,
     stoppedAt: null,
     maxDuration: null,
-    taskTypeId: null,
-    taskTypeName: null
+    taskTypeId: null
   }
 }

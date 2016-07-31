@@ -38,10 +38,6 @@ class TaskLauncher extends React.Component {
             type="text" />
         </div>
         <div className="input-group">
-          <label
-            htmlFor="task-task-type-name">
-            taskTypeName
-          </label>
           <input
             id="task-task-type-name"
             className="form-control"

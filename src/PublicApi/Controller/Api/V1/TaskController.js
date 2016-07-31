@@ -19,10 +19,6 @@ class TaskController{
     assert.notStrictEqual(undefined, req.body.taskTypeId, 'Missing taskTypeId.')
     assert.notStrictEqual('', req.body.taskTypeId, 'Missing taskTypeId.')
 
-    assert.notStrictEqual(null, req.body.taskTypeName, 'Missing taskTypeName.')
-    assert.notStrictEqual(undefined, req.body.taskTypeName, 'Missing taskTypeName.')
-    assert.notStrictEqual('', req.body.taskTypeName, 'Missing taskTypeName.')
-
     if (undefined !== req.body.components) {
       assert(req.body.components instanceof Array, 'Expecting components to be array.')
       assert(req.body.components.length > 0, 'Empty components.')
@@ -38,7 +34,6 @@ class TaskController{
       components: req.body.components,
       createdBy: req.body.createdBy,
       taskTypeId: req.body.taskTypeId,
-      taskTypeName: req.body.taskTypeName,
       command: req.body.command
     })
 
