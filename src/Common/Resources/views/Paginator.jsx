@@ -7,17 +7,49 @@ class Paginator extends React.Component {
   }
 
   _makeLink(page) {
+    if (1 === page) {
+      return '/task'
+    }
+
     return '/task?page=' + page
   }
 
-  handleClick(page, event) {
+  _handleClick(page, event) {
     event.preventDefault()
 
     browserHistory.push(this._makeLink(page))
   }
 
-  getClassName(page) {
+  _getClassName(page) {
     return this.props.currentPage === page ? 'current' : null
+  }
+
+  _previous(event) {
+    if (this._previousDisabled()) {
+      event.preventDefault()
+
+      return
+    }
+
+    this._handleClick(this.props.currentPage - 1, event)
+  }
+
+  _next(event) {
+    if (this._nextDisabled()) {
+      event.preventDefault()
+
+      return
+    }
+
+    this._handleClick(this.props.currentPage + 1, event)
+  }
+
+  _previousDisabled() {
+    return this.props.currentPage <= 1
+  }
+
+  _nextDisabled() {
+    return this.props.currentPage >= this.props.totalPages
   }
 
   render() {
@@ -25,19 +57,38 @@ class Paginator extends React.Component {
       <div className="pagination-wrapper">
         <ul className="pagination">
           {(() => {
+            const currentPage = this.props.currentPage
             const rows = []
+            const previousDisabled = this._previousDisabled()
+            const nextDisabled = this._nextDisabled()
+
+            rows.push(
+              <li key="previous" className={previousDisabled ? 'disabled' : null}>
+                <a disabled={previousDisabled} href={previousDisabled ? '' : this._makeLink(currentPage - 1)} onClick={this._previous.bind(this)}>
+                  <span>&laquo;</span>
+                </a>
+              </li>
+            )
 
             for (var i = 0; i < this.props.totalPages; i += 1) {
               const page = i + 1
 
               rows.push(
-                <li key={i} className={this.getClassName(page)}>
-                  <a href={this._makeLink(page)} onClick={this.handleClick.bind(this, page)}>
+                <li key={i} className={this._getClassName(page)}>
+                  <a href={this._makeLink(page)} onClick={this._handleClick.bind(this, page)}>
                     <span>{page}</span>
                   </a>
                 </li>
               )
             }
+
+            rows.push(
+              <li key="next" className={nextDisabled ? 'disabled' : null}>
+                <a disabled={nextDisabled} href={nextDisabled ? '' : this._makeLink(currentPage + 1)} onClick={this._next.bind(this)}>
+                  <span>&raquo;</span>
+                </a>
+              </li>
+            )
 
             return rows
           })()}
