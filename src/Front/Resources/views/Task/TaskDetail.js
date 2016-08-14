@@ -1,7 +1,7 @@
 import { js_beautify as jsbeautify } from 'js-beautify'
 import React from 'react'
 import { Link } from 'react-router'
-import rp from 'request-promise'
+import request from 'superagent-bluebird-promise'
 import TaskHelper from './TaskHelper'
 
 class TaskDetail extends React.Component {
@@ -17,17 +17,17 @@ class TaskDetail extends React.Component {
   componentDidMount() {
     const taskId = this.props.routeParams.id
 
-    rp({
-      uri: 'http://dockerhost:3000/api/v1/task/' + taskId,
-      json: true,
-    }).then((task) => {
-      const beautified = jsbeautify(JSON.stringify(task), { indent_size: 2 })
+    request('http://dockerhost:3000/api/v1/task/' + taskId)
+      .then((res) => {
+        const task = res.body
 
-      this.setState({
-        task: task,
-        taskAsString: beautified
+        const beautified = jsbeautify(JSON.stringify(task), { indent_size: 2 })
+
+        this.setState({
+          task: task,
+          taskAsString: beautified
+        })
       })
-    })
   }
 
   render() {

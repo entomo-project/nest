@@ -19,6 +19,8 @@ class TaskController{
     assert.notStrictEqual(undefined, req.body.taskTypeId, 'Missing taskTypeId.')
     assert.notStrictEqual('', req.body.taskTypeId, 'Missing taskTypeId.')
 
+    let startAfter = undefined
+
     if (undefined !== req.body.components) {
       assert(req.body.components instanceof Array, 'Expecting components to be array.')
       assert(req.body.components.length > 0, 'Empty components.')
@@ -28,13 +30,27 @@ class TaskController{
         assert.notStrictEqual(undefined, req.body.command, 'Missing command.')
         assert.notStrictEqual('', req.body.command, 'Missing command.')
       }
+
+      if (req.body.components.indexOf('startAfter') !== -1) {
+        assert.notStrictEqual(null, req.body.startAfter, 'Missing startAfter.')
+        assert.notStrictEqual(undefined, req.body.startAfter, 'Missing startAfter.')
+        assert.notStrictEqual('', req.body.startAfter, 'Missing startAfter.')
+
+        startAfter = new Date(req.body.startAfter)
+
+        assert(
+          !isNaN(startAfter.getTime()),
+          'Invalid startAfter "' + req.body.startAfter + '".'
+        )
+      }
     }
 
     const task = this._taskBuilder.buildTask({
       components: req.body.components,
       createdBy: req.body.createdBy,
       taskTypeId: req.body.taskTypeId,
-      command: req.body.command
+      command: req.body.command,
+      startAfter: startAfter
     })
 
     this._mongoClient

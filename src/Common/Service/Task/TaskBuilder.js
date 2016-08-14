@@ -7,7 +7,8 @@ var TaskBuilder = function () {
   //TODO Inject as parameter
   this.componentNameComponentFileAssoc = {
     'baseTask': 'BaseTaskComponent',
-    'commandBasedTask': 'CommandBasedTaskComponent'
+    'commandBasedTask': 'CommandBasedTaskComponent',
+    'startAfterTask': 'StartAfterTaskComponent'
   }
 }
 
@@ -20,6 +21,7 @@ TaskBuilder.prototype.buildTask = function (options) {
   const createdBy = options.createdBy
   const taskTypeId = options.taskTypeId
   const command = options.command
+  const startAfter = options.startAfter
 
   assert.notStrictEqual(null, optionComponentNames)
 
@@ -73,6 +75,21 @@ TaskBuilder.prototype.buildTask = function (options) {
     assert.notStrictEqual('', command)
 
     data.command = command
+  }
+
+  if (componentNames.indexOf('startAfter') !== -1) {
+    assert.notStrictEqual(null, startAfter)
+    assert.notStrictEqual(undefined, startAfter)
+    assert.notStrictEqual('', startAfter)
+
+    assert(startAfter instanceof Date, 'Invalid startAfter, expecting Date, got ' + (typeof startAfter) + '.')
+
+    assert(
+      !isNaN(startAfter.getTime()),
+      'Invalid startAfter.'
+    )
+
+    data.startAfter = startAfter
   }
 
   var task = {

@@ -2,7 +2,6 @@ import React from 'react'
 import rp from 'request-promise'
 import { browserHistory } from 'react-router'
 import TaskHelper from './TaskHelper'
-import Paginator from '../Paginator'
 
 class TaskRow extends React.Component {
   constructor(props) {
@@ -105,13 +104,7 @@ class TaskTable extends React.Component {
       table = <table className="table table-hover table-condensed">
         <thead>
         <tr>
-          <th></th>
-          <th>Task type id</th>
-          <th>Created at</th>
-          <th>Started at</th>
-          <th>Stopped at</th>
-          <th>Created by</th>
-          <th>Max duration</th>
+          
         </tr>
         </thead>
         <tbody>

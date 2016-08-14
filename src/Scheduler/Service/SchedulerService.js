@@ -146,12 +146,30 @@ class SchedulerService {
 
   _main() {
     //Limit 4
+
+    const now = new Date().toISOString()
+
     this
       ._mongoClient
       .collection('nest', 'task')
       .then((collection) => {
         collection
-          .find({ 'meta.components.': 'commandBased', 'data.startedAt': null })
+          .find({
+            'meta.components.': 'commandBased',
+            'data.startedAt': null,
+            $or: [
+              {
+                'data.startAfter': {
+                  $exists: false
+                }
+              },
+              {
+                'data.startAfter': {
+                  $lte: new Date(now)
+                }
+              }
+            ]
+          })
           .limit(8)
           .toArray()
           .then((docs) => {

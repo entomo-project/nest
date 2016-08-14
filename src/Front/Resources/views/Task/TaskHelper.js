@@ -11,6 +11,14 @@ function warning(task) {
   )
 }
 
+function success(task) {
+  return (
+    undefined !== task.data
+    && undefined !== task.data.startedAt
+    && undefined !== task.data.stoppedAt
+  )
+}
+
 function getTaskClassName(task) {
   if (error(task)) {
     return 'has-error'
@@ -18,6 +26,10 @@ function getTaskClassName(task) {
 
   if (warning(task)) {
     return 'has-warning'
+  }
+
+  if (success(task)) {
+    return 'successful'
   }
 }
 

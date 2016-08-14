@@ -1,17 +1,17 @@
 import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import Layout from  '../../Common/Resources/views/Layout'
+import { renderToStaticMarkup } from 'react-dom/server'
+import Html from '../Resources/views/Html'
 
 class TaskController {
   register(app) {
     app.get('*', (req, res) => {
       res.send(
-        ReactDOMServer.renderToStaticMarkup(
-          React.createElement(Layout)
+        renderToStaticMarkup(
+          <Html />
         )
       )
     })
   }
 }
 
-export default TaskController;
+export default TaskController

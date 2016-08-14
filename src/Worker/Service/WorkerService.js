@@ -1,5 +1,5 @@
 import assert from 'assert'
-import _ from 'underscore'
+import _ from 'lodash'
 
 class WorkerService {
   constructor(logger, spawn, webServerFactory, requestPromiseFactory, vm, webServers) {
@@ -16,7 +16,7 @@ class WorkerService {
 
     return (error) => {
       if (doneOnce) {
-        this._logger.error('Should no call "done" method more than once, returning immediately.', { taskId: taskId })
+        this._logger.error('Should not call "done" method more than once, returning immediately.', { taskId: taskId })
 
         return
       }
