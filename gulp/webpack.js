@@ -9,6 +9,7 @@
   const webpack = require('webpack-stream')
   const webpackOptimize = require('webpack').optimize
   const WebpackDefinePlugin = require('webpack').DefinePlugin
+  const plumber = require('gulp-plumber')
 
   const devtool = 'source-map'
 
@@ -44,7 +45,6 @@
             'react-redux',
             'react-router',
             'redux',
-            'redux-saga',
             'redux-thunk'
           ],
           app: filePaths.src.Front.Public.App
@@ -69,6 +69,7 @@
     }
 
     return gulpInit([])
+      .pipe(plumber())
       .pipe(webpack(webpackOpts))
       .pipe(gulp.dest(filePaths.static.js.self))
   }
