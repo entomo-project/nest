@@ -12,14 +12,18 @@
   const staticJsPath = staticPath + '/js'
   const staticVendorPath = staticPath + '/vendor'
   const staticVendorFontAwesomePath = staticVendorPath + '/font-awesome'
+  const staticVendorBootstrapPath = staticVendorPath + '/bootstrap'
   const staticVendorFontAwesomeFontsPath = staticVendorFontAwesomePath + '/fonts'
+  const staticVendorBootstrapFontsPath = staticVendorBootstrapPath + '/fonts'
 
   const srcPath = rootPath + '/src'
 
   const vendorPath = rootPath + '/node_modules'
 
   const fontAwesomePath = vendorPath + '/font-awesome'
+  const bootstrapPath = vendorPath + '/bootstrap'
   const fontAwesomeFontsPath = fontAwesomePath + '/fonts'
+  const bootstrapFontsPath = bootstrapPath + '/fonts'
   const fontAwesomeCssMainPath = fontAwesomePath + '/css/font-awesome.css'
 
   const bootstrapCssMainPath = vendorPath + '/bootstrap/dist/css/bootstrap.css'
@@ -30,6 +34,7 @@
   const srcFrontPublicAppPath = srcPath + '/Front/Public/App'
 
   const webFontAwesomeFontsPath =  '/static/vendor/font-awesome/fonts'
+  const webBootstrapFontsPath =  '/static/vendor/bootstrap/fonts'
 
   module.exports = {
     web: {
@@ -37,6 +42,9 @@
         vendor: {
           fontAwesome: {
             fonts: webFontAwesomeFontsPath
+          },
+          bootstrap: {
+            fonts: webBootstrapFontsPath
           }
         }
       }
@@ -65,6 +73,9 @@
         vendor: {
           fontAwesome: {
             fonts: staticVendorFontAwesomeFontsPath
+          },
+          bootstrap: {
+            fonts: staticVendorBootstrapFontsPath
           }
         }
       },
@@ -91,14 +102,15 @@
         bootstrap: {
           css: {
             main: bootstrapCssMainPath
-          }
+          },
+          fonts: bootstrapFontsPath
         },
         fontAwesome: {
           css: {
             main: fontAwesomeCssMainPath
           },
           fonts: fontAwesomeFontsPath
-        }
+        },
       }
     }
   }

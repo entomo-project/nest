@@ -17,6 +17,11 @@
       .pipe(gulp.dest(filePaths.static.vendor.fontAwesome.fonts))
   })
 
+  gulp.task('build:static:css:vendor:bootstrap:fonts', function () {
+    return gulpInit(filePaths.vendor.bootstrap.fonts + '/*')
+      .pipe(gulp.dest(filePaths.static.vendor.bootstrap.fonts))
+  })
+
   function getFontAwesomeCssStream() {
     return gulpInit(filePaths.vendor.fontAwesome.css.main)
       .pipe(
@@ -26,15 +31,27 @@
       )
   }
 
+  function getBootstrapCssStream() {
+    return gulpInit(filePaths.vendor.bootstrap.css.main)
+      .pipe(
+        replace(
+          /url\('\.\.\/fonts\/(.*?)'\)/g,
+          'url(\'' + webPaths.static.vendor.bootstrap.fonts +'/$1\')')
+      )
+  }
+
   function getOtherVendorCssStream() {
     return gulpInit([
-      filePaths.vendor.bootstrap.css.main,
       filePaths.vendor.bmichalskiReactTable.css.main
     ])
   }
 
-  gulp.task('build:static:css:vendor', ['build:static:css:vendor:font-awesome:fonts'], function () {
-    return merge(getFontAwesomeCssStream(), getOtherVendorCssStream())
+  gulp.task('build:static:css:vendor', ['build:static:css:vendor:font-awesome:fonts', 'build:static:css:vendor:bootstrap:fonts'], function () {
+    return merge(
+        getFontAwesomeCssStream(),
+        getBootstrapCssStream(),
+        getOtherVendorCssStream()
+      )
       .pipe(uglifyCss())
       .pipe(concat(filePaths.static.css.vendor.min))
       .pipe(gulp.dest(filePaths.static.css.self))

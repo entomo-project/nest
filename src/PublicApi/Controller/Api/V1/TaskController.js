@@ -89,18 +89,53 @@ class TaskController{
   listTasks(req, res) {
     const from = req.query.from === undefined ? 0 : parseInt(req.query.from, 10)
     const limit = req.query.limit === undefined ? 10 : parseInt(req.query.limit, 10)
+    const q = req.query.q
+    const rawSort = req.query.sort
+    let sort
+    let sortOrder
+
+    if (undefined !== rawSort) {
+      if ('asc' === rawSort.order) {
+        sortOrder = 1
+      } else if ('desc' === rawSort.order) {
+        sortOrder = -1
+      } else {
+        throw new Error(
+          'Expecting either order to be either "asc" or "desc", got "' + rawSort.order + '"'
+        )
+      }
+
+      sort = {
+        [rawSort.sort]: sortOrder
+      }
+    } else {
+      //Default sort
+      sort = {
+        'data.createdAt': -1
+      }
+    }
+
+    console.log(sort)
 
     this._mongoClient
       .collection('nest', 'task')
       .then((collection) => {
-        var result
-        var total
+        let result
+        let total
+        let filteredTotal
+        const query = {}
+
+        if (!(undefined === q || '' === q || null === q)) {
+          query['data.taskTypeId'] = {
+            $regex: q
+          }
+        }
 
         Promise.all(
           [
             collection
-              .find()
-              .sort({ 'data.createdAt': -1 })
+              .find(query)
+              .sort(sort)
               .skip(from)
               .limit(limit)
               .toArray()
@@ -111,14 +146,20 @@ class TaskController{
               .count()
               .then((iTotal) => {
                 total = iTotal
+              }),
+            collection
+              .find(query)
+              .count()
+              .then((iFilteredTotal) => {
+                filteredTotal = iFilteredTotal
               })
           ]
         ).then(() => {
           res.send({
-            result: result,
+            result,
             info: {
-              total: total,
-              filteredTotal: total //TODO
+              total,
+              filteredTotal
             }
           })
         }).done()
