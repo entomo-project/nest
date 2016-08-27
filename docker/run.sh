@@ -25,7 +25,8 @@ docker run \
   -p 2222:22 \
   --volumes-from entomo-project-nest-data \
   -v $DIR/..:/home/r/nest \
-  --link entomo-project-nest-mongo:mongo \
+  --net dev \
+  --net-alias entomo-project-nest \
   --name entomo-project-nest \
   entomo-project/nest \
   bash -c "service ssh start && chown r:r /home/r/nest && tail -f /dev/null"

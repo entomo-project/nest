@@ -23,14 +23,13 @@ docker run \
   -p 3003:3003 \
   -p 2222:22 \
   --volumes-from entomo-project-nest-data \
-  --link entomo-project-nest-mongo:mongo \
+  --net dev \
+  --net-alias entomo-project-nest \
   --name entomo-project-nest \
   entomo-project/nest \
   bash -c "service ssh start && chown r:r /home/r/nest && tail -f /dev/null"
 
 DOCKER_MACHINE_IP=`docker-machine inspect --format "{{.Driver.HostOnlyCIDR}}" | sed -E 's#(.*)/24#\1#'`
-
-docker exec -t entomo-project-nest bash -c "echo $DOCKER_MACHINE_IP dockermachine >> /etc/hosts"
 
 ID_RSA_PUB=$(cat ~/.ssh/id_rsa.pub)
 
