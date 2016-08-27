@@ -2,39 +2,25 @@ FROM ubuntu:14.04
 
 RUN \
   apt-get update && \
+  apt-get dist-upgrade -y && \
   apt-get install -y \
-    wget
+    wget \
+    git \
+    openssh-server \
+    php5-cli \
+    xz-utils
+
+RUN \
+  cd /root && \
+  wget https://nodejs.org/dist/v4.4.6/node-v4.4.6-linux-x64.tar.xz && \
+  tar -xf node-v4.4.6-linux-x64.tar.xz && \
+  rm node-v4.4.6-linux-x64.tar.xz && \
+  mkdir /opt/node && \
+  mv /root/node-v4.4.6-linux-x64 /opt/node/current
 
 RUN \
   adduser --disabled-password --gecos '' r && \
   adduser r sudo && \
-  echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-RUN \
-  apt-get install xz-utils
-
-WORKDIR /root
-RUN wget https://nodejs.org/dist/v4.4.6/node-v4.4.6-linux-x64.tar.xz
-RUN tar -xf node-v4.4.6-linux-x64.tar.xz
-RUN rm node-v4.4.6-linux-x64.tar.xz
-
-RUN mkdir /opt/node
-RUN mv /root/node-v4.4.6-linux-x64 /opt/node/current
-
-RUN /opt/node/current/bin/npm install nodemon -g
-
-RUN \
-  apt-get install -y \
-    git
-
-RUN \
-  apt-get install -y \
-    openssh-server
-
-RUN echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc
-RUN echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
-
-RUN apt-get install -y \
-  php5-cli
-
-ENV HOME /root
+  echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+  echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc && \
+  echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
