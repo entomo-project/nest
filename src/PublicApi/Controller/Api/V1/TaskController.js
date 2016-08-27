@@ -15,9 +15,9 @@ class TaskController{
     assert.notStrictEqual(undefined, req.body.createdBy, 'Missing createdBy.')
     assert.notStrictEqual('', req.body.createdBy, 'Missing createdBy.')
 
-    assert.notStrictEqual(null, req.body.taskTypeId, 'Missing taskTypeId.')
-    assert.notStrictEqual(undefined, req.body.taskTypeId, 'Missing taskTypeId.')
-    assert.notStrictEqual('', req.body.taskTypeId, 'Missing taskTypeId.')
+    assert.notStrictEqual(null, req.body.type, 'Missing type.')
+    assert.notStrictEqual(undefined, req.body.type, 'Missing type.')
+    assert.notStrictEqual('', req.body.type, 'Missing type.')
 
     let startAfter = undefined
 
@@ -48,7 +48,7 @@ class TaskController{
     const task = this._taskBuilder.buildTask({
       components: req.body.components,
       createdBy: req.body.createdBy,
-      taskTypeId: req.body.taskTypeId,
+      type: req.body.type,
       command: req.body.command,
       startAfter: startAfter
     })
@@ -124,7 +124,7 @@ class TaskController{
         const query = {}
 
         if (!(undefined === q || '' === q || null === q)) {
-          query['data.taskTypeId'] = {
+          query['data.type'] = {
             $regex: q
           }
         }

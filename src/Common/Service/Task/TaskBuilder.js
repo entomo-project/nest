@@ -19,7 +19,7 @@ TaskBuilder.prototype = {
 TaskBuilder.prototype.buildTask = function (options) {
   const optionComponentNames = options.components
   const createdBy = options.createdBy
-  const taskTypeId = options.taskTypeId
+  const type = options.type
   const command = options.command
   const startAfter = options.startAfter
 
@@ -29,9 +29,9 @@ TaskBuilder.prototype.buildTask = function (options) {
   assert.notStrictEqual(undefined, createdBy)
   assert.notStrictEqual('', createdBy)
 
-  assert.notStrictEqual(null, taskTypeId)
-  assert.notStrictEqual(undefined, taskTypeId)
-  assert.notStrictEqual('', taskTypeId)
+  assert.notStrictEqual(null, type)
+  assert.notStrictEqual(undefined, type)
+  assert.notStrictEqual('', type)
 
   const that = this
 
@@ -67,7 +67,7 @@ TaskBuilder.prototype.buildTask = function (options) {
 
   data.createdBy = createdBy
   data.createdAt = new Date()
-  data.taskTypeId = taskTypeId
+  data.type = type
 
   if (componentNames.indexOf('commandBased') !== -1) {
     assert.notStrictEqual(null, command)

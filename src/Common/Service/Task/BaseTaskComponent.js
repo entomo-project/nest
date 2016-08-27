@@ -6,6 +6,6 @@ exports.componentDefinition = {
     startedAt: undefined,
     stoppedAt: undefined,
     maxDuration: undefined,
-    taskTypeId: undefined
+    type: undefined
   }
 }

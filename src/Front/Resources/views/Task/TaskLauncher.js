@@ -28,11 +28,11 @@ class TaskLauncher extends React.Component {
         </div>
         <div className="input-group">
           <label
-            htmlFor="task-task-type-id">
-            taskTypeId
+            htmlFor="task-type">
+            Type
           </label>
           <input
-            id="task-task-type-id"
+            id="task-type"
             className="form-control"
             defaultValue="foobar"
             type="text" />

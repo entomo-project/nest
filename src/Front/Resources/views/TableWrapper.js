@@ -10,7 +10,7 @@ const TableWrapper = (props) => {
   const opts = {
     sort: {
       sortableColumns: [
-        'taskTypeId',
+        'type',
         'createdAt',
         'startedAt',
         'stoppedAt',
@@ -30,9 +30,9 @@ const TableWrapper = (props) => {
                 content: ''
               },
               {
-                name: 'taskTypeId',
+                name: 'type',
                 type: 'HEADING',
-                content: 'Task type id'
+                content: 'Type'
               },
               {
                 name: 'createdAt',
@@ -182,7 +182,7 @@ const TableWrapper = (props) => {
                       content: statusContent
                     },
                     {
-                      content: result.data.taskTypeId
+                      content: result.data.type
                     },
                     {
                       content: result.data.createdAt
