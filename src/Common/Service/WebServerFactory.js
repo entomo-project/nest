@@ -16,6 +16,8 @@ const WebServerFactory = () => {
   app.use(bodyParser.json())
   app.use(haltOnTimedout)
 
+  app.set('x-powered-by', false)
+
   return app
 }
 

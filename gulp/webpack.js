@@ -59,7 +59,10 @@
             }
           ]
         },
-        output: { filename: '[name].js' }
+        output: { filename: '[name].js' },
+        externals: {
+          nestConfig: 'nestConfig'
+        }
       },
       opts
     )

@@ -59,7 +59,7 @@ class TaskController{
         collection
           .insertOne(task)
           .then(() => {
-            res.send({ status: 'success' })
+            res.json({ status: 'success' })
           })
           .done()
       })
@@ -76,9 +76,9 @@ class TaskController{
           .next()
           .then((doc) => {
             if (null === doc) {
-              res.status(404).send({ status: 'not_found' })
+              res.status(404).json({ status: 'not_found' })
             } else {
-              res.send(doc)
+              res.json(doc)
             }
           })
           .done()
@@ -114,8 +114,6 @@ class TaskController{
         'data.createdAt': -1
       }
     }
-
-    console.log(sort)
 
     this._mongoClient
       .collection('nest', 'task')
@@ -155,7 +153,7 @@ class TaskController{
               })
           ]
         ).then(() => {
-          res.send({
+          res.json({
             result,
             info: {
               total,

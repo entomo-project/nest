@@ -5,16 +5,18 @@ import TaskBuilder from '../Common/Service/Task/TaskBuilder'
 import WebServerFactory from '../Common/Service/WebServerFactory'
 import PublicApi from './Service/PublicApi'
 import ServiceDefinition from '../Common/DependencyInjection/ServiceDefinition'
+import config from '../../config'
 
 class PublicApiKernel extends Kernel {
   _configureServiceContainer() {
     super._configureServiceContainer()
 
-    this.serviceContainer.setParameter('mongo_url', 'mongodb://mongo:27017')
+    this.serviceContainer.setParameter('app.mongo_url', config.publicApi.mongoUrl)
+    this.serviceContainer.setParameter('app.allowed_origins', config.publicApi.allowedOrigins)
 
     const mongoClient = new MongoClient(
       this._serviceContainer.get('app.service.logger'),
-      this._serviceContainer.getParameter('mongo_url')
+      this._serviceContainer.getParameter('app.mongo_url')
     )
 
     this.serviceContainer.set('app.service.mongo.client', mongoClient)
@@ -39,7 +41,8 @@ class PublicApiKernel extends Kernel {
             container.get('app.service.logger'),
             container.get('app.service.web_server_factory'),
             container.get('app.controller.api.v1.task'),
-            container.getParameter('app.web_servers')
+            container.getParameter('app.web_servers'),
+            container.getParameter('app.allowed_origins')
           )
         }
       )

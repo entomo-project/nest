@@ -1,9 +1,15 @@
 class PublicApi {
-  constructor(logger, webServerFactory, taskController, webServers) {
+  constructor(logger, webServerFactory, taskController, webServers, allowedOrigins) {
     this._logger = logger
     this._webServerFactory = webServerFactory
     this._taskController = taskController
     this._webServers = webServers
+
+    this._allowedOrigins = {}
+
+    allowedOrigins.forEach((allowedOrigin) => {
+      this._allowedOrigins[allowedOrigin] = allowedOrigin
+    })
   }
 
   start() {
@@ -11,12 +17,16 @@ class PublicApi {
 
     const app = this._webServerFactory()
 
-    /**
-     * For development purposes
-     */
+    const allowedOrigins = this._allowedOrigins
+
     app.use((req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "*")
-      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+      res.set('Access-Control-Allow-Headers', 'Origin')
+
+      const origin = req.get('origin')
+
+      if (undefined !== allowedOrigins[origin]) {
+        res.set('Access-Control-Allow-Origin', origin)
+      }
 
       next()
     })

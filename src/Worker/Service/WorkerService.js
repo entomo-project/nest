@@ -2,13 +2,14 @@ import assert from 'assert'
 import _ from 'lodash'
 
 class WorkerService {
-  constructor(logger, spawn, webServerFactory, requestPromiseFactory, vm, webServers) {
+  constructor(logger, spawn, webServerFactory, requestPromiseFactory, vm, webServers, schedulerBaseUrl) {
     this._logger = logger
     this._spawn = spawn
     this._webServerFactory = webServerFactory
     this._requestPromiseFactory = requestPromiseFactory
     this._vm = vm
     this._webServers = webServers
+    this._schedulerBaseUrl = schedulerBaseUrl
   }
 
   _makeDone(taskId, output) {
@@ -52,7 +53,7 @@ class WorkerService {
 
       const notifyTaskDoneOptions = {
         method: 'PUT',
-        uri: 'http://localhost:3002/api/v1/task/stopped',
+        uri: this._schedulerBaseUrl + '/api/v1/task/stopped',
         body: body,
         json: true
       }
@@ -133,7 +134,7 @@ class WorkerService {
 
       const notifyTaskStartedOptions = {
         method: 'PUT',
-        uri: 'http://localhost:3002/api/v1/task/started',
+        uri: this._schedulerBaseUrl + '/api/v1/task/started',
         body: {
           taskId: req.body.taskId
         },
@@ -183,7 +184,7 @@ class WorkerService {
         })
         .done()
 
-      res.send({ 'status': 'success' })
+      res.json({ 'status': 'success' })
     })
 
     this._webServers.forEach((webServer) => {

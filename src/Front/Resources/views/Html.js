@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default () => {
+export default (props) => {
   return (
     <html>
       <head>
@@ -12,6 +12,8 @@ export default () => {
       </head>
       <body>
         <div id="app-container"></div>
+        <script type="text/javascript" dangerouslySetInnerHTML={{__html: props.strNestConfig}}>
+        </script>
         <script type="text/javascript" src="/static/js/vendor.js"></script>
         <script type="text/javascript" src="/static/js/app.js"></script>
       </body>

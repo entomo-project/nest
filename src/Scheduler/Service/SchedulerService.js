@@ -2,13 +2,14 @@ import assert from 'assert'
 import { ObjectID } from 'mongodb'
 
 class SchedulerService {
-  constructor(logger, mongoClient, rp, webServerFactory, webServers, queueSize) {
+  constructor(logger, mongoClient, rp, webServerFactory, webServers, queueSize, workerBaseUrl) {
     this._logger = logger
     this._mongoClient = mongoClient
     this._rp = rp
     this._webServerFactory = webServerFactory
     this._webServers = webServers
     this._queueSize = queueSize
+    this._workerBaseUrl = workerBaseUrl
 
     this._elementsInQueue = 0
     this._queue = {}
@@ -55,7 +56,7 @@ class SchedulerService {
 
             this._logger.info('Marked task as started.', { _id: req.body.taskId });
 
-            res.send({ status: 'success' })
+            res.json({ status: 'success' })
           })
           .done()
       })
@@ -101,7 +102,7 @@ class SchedulerService {
 
             this._removeTaskFromQueue(taskId)
 
-            res.send({ status: 'success' })
+            res.json({ status: 'success' })
           })
           .done()
       })
@@ -122,7 +123,7 @@ class SchedulerService {
       this
         ._rp({
           method: 'POST',
-          uri: 'http://localhost:3003/do',
+          uri: this._workerBaseUrl + '/do',
           body: {
             taskId: _id,
             command: task.data.command

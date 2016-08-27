@@ -1,11 +1,12 @@
 import React from 'react'
 import { Table } from '@bmichalski-react/table'
-import request from 'superagent-bluebird-promise'
 import { withRouter } from 'react-router'
 import Promise from 'bluebird'
 import TaskHelper from './Task/TaskHelper'
 
 const TableWrapper = (props) => {
+  const publicApi = props.publicApi
+  
   const opts = {
     sort: {
       sortableColumns: [
@@ -135,88 +136,87 @@ const TableWrapper = (props) => {
           })
 
           timeout = setTimeout(() => {
-            request
-              .get('http://dockerhost:3000/api/v1/task')
-              .query({
-                from: from,
+            publicApi
+              .listTasks({
+                from,
                 limit: pageSize,
-                q: q,
-                sort: sort
+                q,
+                sort
               }).then((res) => {
-              const body = res.body
-              const rows = []
-              const classNames = {}
-              const idsByRowIndex = {}
+                const body = res.body
+                const rows = []
+                const classNames = {}
+                const idsByRowIndex = {}
 
-              const makeStatusContentAndClassNames = (task) => {
-                const taskClassName = TaskHelper.getTaskClassName(task)
-                let content
+                const makeStatusContentAndClassNames = (task) => {
+                  const taskClassName = TaskHelper.getTaskClassName(task)
+                  let content
 
-                if ('has-error' === taskClassName) {
-                  content = (
-                    <i className="fa fa-warning" />
-                  )
-                } else if ('has-warning' === taskClassName) {
-                  content = (
-                    <i className="fa fa-warning" />
-                  )
-                } else if (null !== task.data.stoppedAt) {
-                  content = (
-                    <i className="fa fa-check" />
-                  )
-                }
-
-                return {
-                  statusContent: content,
-                  className: taskClassName
-                }
-              }
-
-              body.result.forEach((result, i) => {
-                const { statusContent, className } = makeStatusContentAndClassNames(result)
-
-                idsByRowIndex[i] = result._id
-
-                const row = [
-                  {
-                    content: statusContent
-                  },
-                  {
-                    content: result.data.taskTypeId
-                  },
-                  {
-                    content: result.data.createdAt
-                  },
-                  {
-                    content: result.data.startedAt
-                  },
-                  {
-                    content : result.data.stoppedAt
-                  },
-                  {
-                    content: result.data.createdBy
-                  },
-                  {
-                    content: result.data.maxDuration
+                  if ('has-error' === taskClassName) {
+                    content = (
+                      <i className="fa fa-warning" />
+                    )
+                  } else if ('has-warning' === taskClassName) {
+                    content = (
+                      <i className="fa fa-warning" />
+                    )
+                  } else if (null !== task.data.stoppedAt) {
+                    content = (
+                      <i className="fa fa-check" />
+                    )
                   }
-                ]
 
-                rows.push(row)
+                  return {
+                    statusContent: content,
+                    className: taskClassName
+                  }
+                }
 
-                classNames[i] = className
+                body.result.forEach((result, i) => {
+                  const { statusContent, className } = makeStatusContentAndClassNames(result)
+
+                  idsByRowIndex[i] = result._id
+
+                  const row = [
+                    {
+                      content: statusContent
+                    },
+                    {
+                      content: result.data.taskTypeId
+                    },
+                    {
+                      content: result.data.createdAt
+                    },
+                    {
+                      content: result.data.startedAt
+                    },
+                    {
+                      content : result.data.stoppedAt
+                    },
+                    {
+                      content: result.data.createdBy
+                    },
+                    {
+                      content: result.data.maxDuration
+                    }
+                  ]
+
+                  rows.push(row)
+
+                  classNames[i] = className
+                })
+
+                resolve({
+                  result: rows,
+                  info: {
+                    total: body.info.total,
+                    filteredTotal: body.info.filteredTotal
+                  },
+                  classNames,
+                  idsByRowIndex
+                })
               })
-
-              resolve({
-                result: rows,
-                info: {
-                  total: body.info.total,
-                  filteredTotal: body.info.filteredTotal
-                },
-                classNames,
-                idsByRowIndex
-              })
-            })
-          }, loadingDelay)
+            }, loadingDelay)
         })
       }
     }
@@ -240,7 +240,8 @@ const TableWrapper = (props) => {
 }
 
 TableWrapper.propTypes = {
-  loadingDelay: React.PropTypes.number.isRequired
+  loadingDelay: React.PropTypes.number.isRequired,
+  publicApi: React.PropTypes.object.isRequired
 }
 
 TableWrapper.defaultProps = {

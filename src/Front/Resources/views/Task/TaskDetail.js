@@ -1,12 +1,13 @@
 import { js_beautify as jsbeautify } from 'js-beautify'
 import React from 'react'
 import { Link } from 'react-router'
-import request from 'superagent-bluebird-promise'
 import TaskHelper from './TaskHelper'
 
 class TaskDetail extends React.Component {
   constructor(props) {
     super(props)
+
+    this._publicApi = props.publicApi
 
     this.state = {
       task: null,
@@ -17,7 +18,7 @@ class TaskDetail extends React.Component {
   componentDidMount() {
     const taskId = this.props.routeParams.id
 
-    request('http://dockerhost:3000/api/v1/task/' + taskId)
+    this._publicApi.getTask(taskId)
       .then((res) => {
         const task = res.body
 
@@ -112,6 +113,10 @@ class TaskDetail extends React.Component {
       }
     )()
   }
+}
+
+TaskDetail.PropTypes = {
+  publicApi: React.PropTypes.object.isRequired
 }
 
 export default TaskDetail

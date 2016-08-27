@@ -3,14 +3,22 @@ import TaskController from './Controller/TaskController'
 import WebServerFactory from '../Common/Service/WebServerFactory'
 import FrontApp from './Service/FrontApp'
 import ServiceDefinition from '../Common/DependencyInjection/ServiceDefinition'
+import config from '../../config'
 
 class FrontKernel extends Kernel {
   _configureServiceContainer() {
     super._configureServiceContainer()
 
     this.serviceContainer.set('app.service.web_server_factory', WebServerFactory)
+    this.serviceContainer.setParameter('app.front.public.publicApi.baseUrl', config.front.public.publicApi.baseUrl)
 
-    const taskController = new TaskController()
+    const taskController = new TaskController(
+      {
+        publicApi: {
+          baseUrl: this.serviceContainer.getParameter('app.front.public.publicApi.baseUrl')
+        }
+      }
+    )
 
     this.serviceContainer.set('app.controller.task', taskController)
 

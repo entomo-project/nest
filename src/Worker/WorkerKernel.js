@@ -5,6 +5,7 @@ import Kernel from '../Common/DependencyInjection/Kernel'
 import WebServerFactory from '../Common/Service/WebServerFactory'
 import WorkerService from './Service/WorkerService'
 import ServiceDefinition from '../Common/DependencyInjection/ServiceDefinition'
+import config from '../../config'
 
 class WorkerKernel extends Kernel {
   _configureServiceContainer() {
@@ -14,6 +15,7 @@ class WorkerKernel extends Kernel {
     this.serviceContainer.set('app.service.spawn', spawn)
     this.serviceContainer.set('app.service.request_promise_factory', requestPromiseFactory)
     this.serviceContainer.set('app.service.web_server_factory', WebServerFactory)
+    this.serviceContainer.setParameter('app.scheduler.base_url', config.worker.scheduler.baseUrl)
 
     this.serviceContainer.setDefinition(
       'app.service.worker',
@@ -25,7 +27,8 @@ class WorkerKernel extends Kernel {
             container.get('app.service.web_server_factory'),
             container.get('app.service.request_promise_factory'),
             container.get('app.service.vm'),
-            container.getParameter('app.web_servers')
+            container.getParameter('app.web_servers'),
+            container.getParameter('app.scheduler.base_url')
           )
         }
       )
