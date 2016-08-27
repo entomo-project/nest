@@ -2,10 +2,10 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+docker network create dev
+
 DOCKER_MONGO=`docker inspect --format="{{ .Id }}" entomo-project-nest-mongo 2> /dev/null`
 DOCKER_MONGO_DATA=`docker inspect --format="{{ .Id }}" entomo-project-nest-mongo-data 2> /dev/null`
-
-docker network create dev
 
 if [ -z "$DOCKER_MONGO_DATA" ]
 then
