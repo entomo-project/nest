@@ -1,11 +1,11 @@
 exports.componentDefinition = {
   name: 'baseTask',
   component: {
-    createdAt: null,
-    createdBy: null,
-    startedAt: null,
-    stoppedAt: null,
-    maxDuration: null,
-    taskTypeId: null
+    createdAt: undefined,
+    createdBy: undefined,
+    startedAt: undefined,
+    stoppedAt: undefined,
+    maxDuration: undefined,
+    taskTypeId: undefined
   }
 }

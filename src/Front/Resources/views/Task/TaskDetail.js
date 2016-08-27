@@ -65,7 +65,9 @@ class TaskDetail extends React.Component {
                       </div>
                     </div>
                   )
-                } else if ('has-warning' === taskClassName) {
+                }
+
+                if ('has-warning' === taskClassName) {
                   return (
                     <div className="row">
                       <div className="col-md-12">
@@ -76,7 +78,9 @@ class TaskDetail extends React.Component {
                       </div>
                     </div>
                   )
-                } else if (null !== task.data.stoppedAt) {
+                }
+
+                if ('successful' === taskClassName) {
                   return (
                     <div className="row">
                       <div className="col-md-12">
@@ -87,18 +91,18 @@ class TaskDetail extends React.Component {
                       </div>
                     </div>
                   )
-                } else {
-                  return (
-                    <div className="row">
-                      <div className="col-md-12">
-                        <div className="alert alert-info">
-                          <i className="fa fa-question-circle" />&nbsp;
-                          This task hasn't started yet.
-                        </div>
+                }
+
+                return (
+                  <div className="row">
+                    <div className="col-md-12">
+                      <div className="alert alert-info">
+                        <i className="fa fa-question-circle" />&nbsp;
+                        This task isn't done yet.
                       </div>
                     </div>
-                  )
-                }
+                  </div>
+                )
               }
             )()}
             <div className="row">

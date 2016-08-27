@@ -160,7 +160,7 @@ const TableWrapper = (props) => {
                     content = (
                       <i className="fa fa-warning" />
                     )
-                  } else if (null !== task.data.stoppedAt) {
+                  } else if ('successful' === taskClassName) {
                     content = (
                       <i className="fa fa-check" />
                     )
