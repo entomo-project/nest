@@ -19,6 +19,21 @@ function success(task) {
   )
 }
 
+function notStarted(task) {
+  return (
+    undefined !== task.data
+    && undefined === task.data.startedAt
+  )
+}
+
+function notDoneYet(task) {
+  return (
+    undefined !== task.data
+    && undefined !== task.data.startedAt
+    && undefined === task.data.stoppedAt
+  )
+}
+
 function getTaskClassName(task) {
   if (error(task)) {
     return 'has-error'
@@ -30,6 +45,14 @@ function getTaskClassName(task) {
 
   if (success(task)) {
     return 'successful'
+  }
+
+  if (notDoneYet(task)) {
+    return 'not-done-yet'
+  }
+
+  if (notStarted(task)) {
+    return 'not-started'
   }
 }
 

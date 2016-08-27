@@ -1,19 +1,35 @@
 tr {
-    &.has-error {
-        > td {
-            background-color: #f2dede;
-        }
-    }
+  td {
+    &.status {
+      text-align: center;
 
-    &.has-warning {
-        > td {
-            background-color: #fcf8e3;
-        }
+      i {
+        margin-top: 3px;
+      }
     }
+  }
 
-    &.successful {
-        > td {
-            background-color: #dff0d8;
-        }
+  &.has-error {
+    > td {
+      background-color: #f2dede;
     }
+  }
+
+  &.has-warning {
+    > td {
+      background-color: #fcf8e3;
+    }
+  }
+
+  &.successful {
+    > td {
+      background-color: #dff0d8;
+    }
+  }
+
+  &.not-done-yet {
+    > td {
+      background-color: #d9edf7;
+    }
+  }
 }

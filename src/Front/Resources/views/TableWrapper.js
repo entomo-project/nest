@@ -68,22 +68,32 @@ const TableWrapper = (props) => {
       updateBodys: (data) => {
         const rows = []
 
-        data.result.forEach((resultRow, i) => {
+        const getCellClassName = (i) => {
+          let className = 'clickable'
+
+          if (0 === i) {
+            className += ' status'
+          }
+
+          return className
+        }
+
+        data.result.forEach((resultRow, rowIndex) => {
           const row = {
             cells: [],
             props: {
-              className: data.classNames[i]
+              className: data.classNames[rowIndex]
             }
           }
 
-          resultRow.forEach((resultCell) => {
+          resultRow.forEach((resultCell, cellIndex) => {
             row.cells.push({
               props: {
-                className: 'clickable',
+                className: getCellClassName(cellIndex),
                 onClick: (event) => {
                   event.preventDefault()
 
-                  props.router.push('/task/' + data.idsByRowIndex[i])
+                  props.router.push('/task/' + data.idsByRowIndex[rowIndex])
                 }
               },
               content: resultCell.content
@@ -163,6 +173,10 @@ const TableWrapper = (props) => {
                   } else if ('successful' === taskClassName) {
                     content = (
                       <i className="fa fa-check" />
+                    )
+                  } else if ('not-done-yet' === taskClassName) {
+                    content = (
+                      <i className="fa fa-spinner fa-pulse fa-fw" />
                     )
                   }
 
