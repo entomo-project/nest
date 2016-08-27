@@ -93,16 +93,31 @@ class TaskDetail extends React.Component {
                   )
                 }
 
-                return (
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="alert alert-info">
-                        <i className="fa fa-question-circle" />&nbsp;
-                        This task isn't done yet.
+                if ('not-done-yet' === taskClassName) {
+                  return (
+                    <div className="row">
+                      <div className="col-md-12">
+                        <div className="alert alert-info">
+                          <i className="fa fa-question-circle" />&nbsp;
+                          This task isn't done yet.
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
+                  )
+                }
+
+                if ('not-started' === taskClassName) {
+                  return (
+                    <div className="row">
+                      <div className="col-md-12">
+                        <div className="alert alert-info">
+                          <i className="fa fa-question-circle" />&nbsp;
+                          This task has not started yet.
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
               }
             )()}
             <div className="row">
