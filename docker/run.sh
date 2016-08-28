@@ -32,11 +32,8 @@ docker run \
   bash -c "service ssh start && chown r:r /home/r/nest && tail -f /dev/null"
 
 ID_RSA_PUB=$(cat ~/.ssh/id_rsa.pub)
-ID_RSA_PRIVATE=$(cat ~/.ssh/id_rsa)
 
 docker exec -t entomo-project-nest bash -c "mkdir -p /home/r/.ssh"
 docker exec -t entomo-project-nest bash -c "echo '$ID_RSA_PUB' > /home/r/.ssh/authorized_keys"
-docker exec -t entomo-project-nest bash -c "echo '$ID_RSA_PRIVATE' > /home/r/.ssh/id_rsa"
 docker exec -t entomo-project-nest bash -c "echo '$ID_RSA_PUB' > /home/r/.ssh/id_rsa.pub"
-docker exec -t entomo-project-nest bash -c "chmod 400 /home/r/.ssh/id_rsa"
-docker exec -t entomo-project-nest bash -c "chown r:r /home/r/.ssh/id_rsa /home/r/.ssh/id_rsa.pub"
+docker exec -t entomo-project-nest bash -c "chown r:r /home/r/.ssh/id_rsa.pub"

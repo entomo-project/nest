@@ -14,6 +14,6 @@ function callback(error, stdout, stderr) {
 }
 
 exec(
-  __dirname + '/node_modules/.bin/pm2 stop all && ' + __dirname + '/node_modules/.bin/pm2 delete all',
+  __dirname + '/../node_modules/.bin/pm2 stop all && ' + __dirname + '/../node_modules/.bin/pm2 delete all',
   callback
 )
