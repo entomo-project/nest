@@ -6,9 +6,9 @@ var extend = require('extend')
 var TaskBuilder = function () {
   //TODO Inject as parameter
   this.componentNameComponentFileAssoc = {
-    'baseTask': 'BaseTaskComponent',
-    'commandBasedTask': 'CommandBasedTaskComponent',
-    'startAfterTask': 'StartAfterTaskComponent'
+    'baseTask': 'base-task-component',
+    'commandBasedTask': 'command-based-task-component',
+    'startAfterTask': 'start-after-task-component'
   }
 }
 
@@ -77,7 +77,7 @@ TaskBuilder.prototype.buildTask = function (options) {
     data.command = command
   }
 
-  if (componentNames.indexOf('startAfter') !== -1) {
+  if (componentNames.indexOf('start-after') !== -1) {
     assert.notStrictEqual(null, startAfter)
     assert.notStrictEqual(undefined, startAfter)
     assert.notStrictEqual('', startAfter)

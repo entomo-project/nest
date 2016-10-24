@@ -1,6 +1,7 @@
 import assert from 'assert'
 import { ObjectID } from 'mongodb'
 import Promise from 'bluebird'
+import Boom from 'boom'
 
 class TaskController{
   constructor(mongoClient, taskBuilder) {
@@ -8,49 +9,51 @@ class TaskController{
     this._taskBuilder = taskBuilder
   }
 
-  postTask(req, res) {
-    assert.notStrictEqual(null, req.body.components, 'Missing components.')
+  createTask(req, res) {
+    const payload = req.payload
 
-    assert.notStrictEqual(null, req.body.createdBy, 'Missing createdBy.')
-    assert.notStrictEqual(undefined, req.body.createdBy, 'Missing createdBy.')
-    assert.notStrictEqual('', req.body.createdBy, 'Missing createdBy.')
+    assert.notStrictEqual(null, payload.components, 'Missing components.')
 
-    assert.notStrictEqual(null, req.body.type, 'Missing type.')
-    assert.notStrictEqual(undefined, req.body.type, 'Missing type.')
-    assert.notStrictEqual('', req.body.type, 'Missing type.')
+    assert.notStrictEqual(null, payload.createdBy, 'Missing createdBy.')
+    assert.notStrictEqual(undefined, payload.createdBy, 'Missing createdBy.')
+    assert.notStrictEqual('', payload.createdBy, 'Missing createdBy.')
+
+    assert.notStrictEqual(null, payload.type, 'Missing type.')
+    assert.notStrictEqual(undefined, payload.type, 'Missing type.')
+    assert.notStrictEqual('', payload.type, 'Missing type.')
 
     let startAfter = undefined
 
-    if (undefined !== req.body.components) {
-      assert(req.body.components instanceof Array, 'Expecting components to be array.')
-      assert(req.body.components.length > 0, 'Empty components.')
+    if (undefined !== payload.components) {
+      assert(payload.components instanceof Array, 'Expecting components to be array.')
+      assert(payload.components.length > 0, 'Empty components.')
 
-      if (req.body.components.indexOf('commandBased') !== -1) {
-        assert.notStrictEqual(null, req.body.command, 'Missing command.')
-        assert.notStrictEqual(undefined, req.body.command, 'Missing command.')
-        assert.notStrictEqual('', req.body.command, 'Missing command.')
+      if (payload.components.indexOf('commandBased') !== -1) {
+        assert.notStrictEqual(null, payload.command, 'Missing command.')
+        assert.notStrictEqual(undefined, payload.command, 'Missing command.')
+        assert.notStrictEqual('', payload.command, 'Missing command.')
       }
 
-      if (req.body.components.indexOf('startAfter') !== -1) {
-        assert.notStrictEqual(null, req.body.startAfter, 'Missing startAfter.')
-        assert.notStrictEqual(undefined, req.body.startAfter, 'Missing startAfter.')
-        assert.notStrictEqual('', req.body.startAfter, 'Missing startAfter.')
+      if (payload.components.indexOf('startAfter') !== -1) {
+        assert.notStrictEqual(null, payload.startAfter, 'Missing startAfter.')
+        assert.notStrictEqual(undefined, payload.startAfter, 'Missing startAfter.')
+        assert.notStrictEqual('', payload.startAfter, 'Missing startAfter.')
 
-        startAfter = new Date(req.body.startAfter)
+        startAfter = new Date(payload.startAfter)
 
         assert(
           !isNaN(startAfter.getTime()),
-          'Invalid startAfter "' + req.body.startAfter + '".'
+          'Invalid startAfter "' + payload.startAfter + '".'
         )
       }
     }
 
     const task = this._taskBuilder.buildTask({
-      components: req.body.components,
-      createdBy: req.body.createdBy,
-      type: req.body.type,
-      command: req.body.command,
-      startAfter: startAfter
+      components: payload.components,
+      createdBy: payload.createdBy,
+      type: payload.type,
+      command: payload.command,
+      startAfter
     })
 
     this._mongoClient
@@ -64,19 +67,21 @@ class TaskController{
       })
   }
 
-  getTask(req, res) {
+  retrieveTask(req, res) {
+    const objectId = ObjectID(req.params.id)
+
     this._mongoClient
       .collection('nest', 'task')
       .then((collection) => {
         collection
-          .find({ '_id': ObjectID(req.params.id) })
+          .find({ '_id': objectId })
           .limit(1)
           .next()
           .then((doc) => {
             if (null === doc) {
-              res.status(404).json({ status: 'not_found' })
+              res(Boom.notFound())
             } else {
-              res(doc)
+              res({ result: doc })
             }
           })
       })
@@ -163,19 +168,19 @@ class TaskController{
   register(routes) {
     routes.push({
       method: 'POST',
-      path:'/api/v1/task',
-      handler: this.postTask.bind(this)
+      path:'/api/task',
+      handler: this.createTask.bind(this)
     })
 
     routes.push({
       method: 'GET',
-      path:'/api/v1/task/:id',
-      handler: this.getTask.bind(this)
+      path:'/api/task/{id}',
+      handler: this.retrieveTask.bind(this)
     })
 
     routes.push({
       method: 'GET',
-      path:'/api/v1/task',
+      path:'/api/task',
       handler: this.listTasks.bind(this)
     })
   }

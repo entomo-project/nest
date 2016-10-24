@@ -4,24 +4,28 @@ import MongoClient from '../common/service/mongo/mongo-client'
 import TaskBuilder from '../common/service/task/task-builder'
 import PublicApi from './service/task-api'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
+import timeService from '../common/service/time'
 import config from '../../config'
 
 class TaskApiKernel extends Kernel {
   _configureServiceContainer() {
     super._configureServiceContainer()
 
-    this.serviceContainer.setParameter('app.host', config.publicApi.host)
-    this.serviceContainer.setParameter('app.port', config.publicApi.port)
-    this.serviceContainer.setParameter('app.mongo_url', config.publicApi.mongoUrl)
+    this.serviceContainer.setParameter('app.host', config.taskApi.host)
+    this.serviceContainer.setParameter('app.port', config.taskApi.port)
+    this.serviceContainer.setParameter('app.mongo_url', config.taskApi.mongoUrl)
 
     const mongoClient = new MongoClient(
       this._serviceContainer.get('app.service.logger'),
       this._serviceContainer.getParameter('app.mongo_url')
     )
 
+    this.serviceContainer.set('app.service.time', timeService)
     this.serviceContainer.set('app.service.mongo.client', mongoClient)
 
-    const taskBuilder = new TaskBuilder()
+    const taskBuilder = new TaskBuilder(
+      this.serviceContainer.get('app.service.time')
+    )
     this.serviceContainer.set('app.service.task.builder', taskBuilder)
 
     const taskController = new TaskController(
