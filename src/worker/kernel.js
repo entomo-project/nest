@@ -4,6 +4,7 @@ import ServiceDefinition from '../common/dependency-injection/service-definition
 import config from '../../config'
 import SchedulerNotifier from './service/scheduler-notifier'
 import ShellCommandRunner from './service/shell-command-runner'
+import SandboxService from './service/sandbox-service'
 
 class WorkerKernel extends Kernel {
   _configureServiceContainer() {
@@ -49,6 +50,15 @@ class WorkerKernel extends Kernel {
       })
     )
     this.serviceContainer.setDefinition(
+      'app.service.sandbox',
+      new ServiceDefinition((container) => {
+        return new SandboxService(
+          container.get('app.service.vm'),
+          container.get('app.service.shell_command_runner')
+        )
+      })
+    )
+    this.serviceContainer.setDefinition(
       'app.service.server',
       new ServiceDefinition(
         (container) => {
@@ -56,8 +66,7 @@ class WorkerKernel extends Kernel {
             container.getParameter('app.service.host'),
             container.getParameter('app.service.port'),
             container.get('app.service.logger'),
-            container.get('app.service.vm'),
-            container.get('app.service.shell_command_runner'),
+            container.get('app.service.sandbox'),
             container.get('app.service.scheduler_notifier'),
             container.getParameter('app.scheduler.base_url')
           )

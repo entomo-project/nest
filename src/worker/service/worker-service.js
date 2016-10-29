@@ -1,44 +1,24 @@
 import assert from 'assert'
 import initServer from '@bmichalski/basic-hapi-api-server'
 import Joi from 'joi'
-import _ from 'lodash'
 import Promise from 'bluebird'
+import errorSerializer from '../../common/serializer/error-serializer'
 
 class WorkerService {
   constructor(
     workerHost,
     workerPort,
     logger,
-    vm,
-    shellCommandRunner,
+    sandbox,
     schedulerNotifier,
     schedulerBaseUrl
   ) {
     this._workerHost = workerHost
     this._workerPort = workerPort
     this._logger = logger
-    this._vm = vm
-    this._shellCommandRunner = shellCommandRunner
+    this._sandbox = sandbox
     this._schedulerNotifier = schedulerNotifier
     this._schedulerBaseUrl = schedulerBaseUrl
-  }
-
-  _errorToSerializable(err) {
-    if (!_.isObject(err)) {
-      return err
-    }
-
-    const plainObject = {}
-
-    if (undefined !== err.constructor && undefined !== err.constructor.name) {
-      plainObject.className = err.constructor.name
-    }
-
-    Object.getOwnPropertyNames(err).forEach((key) => {
-      plainObject[key] = err[key]
-    })
-
-    return plainObject
   }
 
   _doNotifyStopped(taskId, output, error) {
@@ -56,7 +36,7 @@ class WorkerService {
       }
     }
 
-    const serializableError = this._errorToSerializable(error)
+    const serializableError = errorSerializer(error)
 
     if (undefined !== error) {
       body.error = serializableError
@@ -99,11 +79,7 @@ class WorkerService {
     assert.notStrictEqual(undefined, taskId, 'Missing required taskId')
     assert.notStrictEqual(undefined, jsCode, 'Missing required jsCode')
 
-    const output = {
-      stdOut: null,
-      stdErr: null,
-      exitCode: null
-    }
+    const output = this._sandbox.makeOutput()
 
     const notifyStopped = this._makeNotifyStopped()
 
@@ -111,33 +87,13 @@ class WorkerService {
       notifyStopped(taskId, output, err)
     }
 
-    const rawSandboxContext = {
-      done: () => {
+    this
+      ._sandbox
+      .runJsCode(jsCode, output)
+      .then(() => {
         notifyStopped(taskId, output)
-      },
-      console: console,
-      executeCommand: (args) => {
-        return this
-          ._shellCommandRunner
-          .execute(args, output)
-          .catch((err) => {
-            handleError(err)
-
-            if (err) {
-              throw err
-            }
-          })
-      },
-      assert: assert
-    }
-
-    this._vm.createContext(rawSandboxContext)
-
-    try {
-      this._vm.runInContext(jsCode, rawSandboxContext)
-    } catch (err) {
-      handleError(err)
-    }
+      })
+      .catch(handleError)
   }
 
   start() {
