@@ -2,7 +2,8 @@
   "name": "nest",
   "license": "MIT",
   "scripts": {
-    "gulp": "./node_modules/.bin/gulp"
+    "gulp": "./node_modules/.bin/gulp",
+    "mocha": "./node_modules/.bin/mocha"
   },
   "dependencies": {
     "@bmichalski/basic-hapi-api-server": "git://github.com/bmichalski-js/basic-hapi-api-server.git#experimental",

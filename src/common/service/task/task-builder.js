@@ -1,105 +1,83 @@
-var assert = require('assert')
+import assert from 'assert'
+import _ from 'lodash'
 
-var foreach = require('foreach')
-var extend = require('extend')
+class TaskBuilder {
+  constructor(timeService) {
+    this._timeService = timeService
 
-var TaskBuilder = function () {
-  //TODO Inject as parameter
-  this.componentNameComponentFileAssoc = {
-    'baseTask': 'base-task-component',
-    'commandBasedTask': 'command-based-task-component',
-    'startAfterTask': 'start-after-task-component'
-  }
-}
-
-TaskBuilder.prototype = {
-  componentNameComponentFileAssoc: null
-}
-
-TaskBuilder.prototype.buildTask = function (options) {
-  const optionComponentNames = options.components
-  const createdBy = options.createdBy
-  const type = options.type
-  const command = options.command
-  const startAfter = options.startAfter
-
-  assert.notStrictEqual(null, optionComponentNames)
-
-  assert.notStrictEqual(null, createdBy)
-  assert.notStrictEqual(undefined, createdBy)
-  assert.notStrictEqual('', createdBy)
-
-  assert.notStrictEqual(null, type)
-  assert.notStrictEqual(undefined, type)
-  assert.notStrictEqual('', type)
-
-  const that = this
-
-  var componentNames
-
-  if (undefined === optionComponentNames) {
-    componentNames = [ 'base' ]
-  } else {
-    assert(optionComponentNames instanceof Array)
-
-    componentNames = [ 'base' ].concat(optionComponentNames)
+    //TODO Inject as parameter
+    this.componentNameComponentFileAssoc = {
+      baseTask: 'base-task-component',
+      commandBasedTask: 'command-based-task-component',
+      startAfterTask: 'start-after-task-component'
+    }
   }
 
-  const components = []
+  buildTask(options) {
+    const optionComponentNames = options.components
+    const createdBy = options.createdBy
+    const type = options.type
+    const startAfter = options.startAfter
 
-  foreach(componentNames, function (origComponentName) {
-    var componentName
+    let componentNames
 
-    componentName = origComponentName + 'Task'
+    if (undefined === optionComponentNames) {
+      componentNames = [ 'base' ]
+    } else {
+      assert(optionComponentNames instanceof Array)
 
-    var componentFileName = that.componentNameComponentFileAssoc[componentName]
-
-    if (undefined === componentFileName) {
-      throw new Error('Found no component file for component with name "' + origComponentName +'"')
+      componentNames = [ 'base' ].concat(optionComponentNames)
     }
 
-    components.push(
-      require(__dirname + '/' + componentFileName).componentDefinition.component
-    )
-  })
+    const components = []
 
-  const data = extend.apply(undefined, [{}].concat(components))
+    _.forEach(componentNames, (origComponentName) => {
+      const componentName = origComponentName + 'Task'
 
-  data.createdBy = createdBy
-  data.createdAt = new Date()
-  data.type = type
+      const componentFileName = this.componentNameComponentFileAssoc[componentName]
 
-  if (componentNames.indexOf('commandBased') !== -1) {
-    assert.notStrictEqual(null, command)
-    assert.notStrictEqual(undefined, command)
-    assert.notStrictEqual('', command)
+      if (undefined === componentFileName) {
+        throw new Error('Found no component file for component with name "' + origComponentName +'"')
+      }
 
-    data.command = command
+      components.push(
+        require(__dirname + '/' + componentFileName).componentDefinition.component
+      )
+    })
+
+    const data = _.extend.apply(undefined, [{}].concat(components))
+
+    data.createdBy = createdBy
+    data.createdAt = this._timeService.getNowDate()
+    data.type = type
+
+    if (componentNames.indexOf('commandBased') !== -1) {
+      const command = options.command
+
+      assert.notStrictEqual(undefined, command)
+
+      data.command = command
+    }
+
+    if (componentNames.indexOf('start-after') !== -1) {
+      data.startAfter = startAfter
+    }
+
+    _.each(data, (val, i) => {
+      if (undefined === val) {
+        delete data[i]
+      }
+    })
+
+    const task = {
+      meta: {
+        components: componentNames
+      },
+      data: data
+    }
+
+    return task
   }
-
-  if (componentNames.indexOf('start-after') !== -1) {
-    assert.notStrictEqual(null, startAfter)
-    assert.notStrictEqual(undefined, startAfter)
-    assert.notStrictEqual('', startAfter)
-
-    assert(startAfter instanceof Date, 'Invalid startAfter, expecting Date, got ' + (typeof startAfter) + '.')
-
-    assert(
-      !isNaN(startAfter.getTime()),
-      'Invalid startAfter.'
-    )
-
-    data.startAfter = startAfter
-  }
-
-  var task = {
-    meta: {
-      components: componentNames
-    },
-    data: data
-  }
-
-  return task
 }
 
 export default TaskBuilder

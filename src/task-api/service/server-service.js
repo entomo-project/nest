@@ -1,16 +1,18 @@
-class TaskApi {
+import Promise from 'bluebird'
+
+class TaskApiServerService {
   constructor(
     taskApiHost,
     taskApiPort,
     logger,
     initServer,
-    taskController
+    taskRoutes
   ) {
     this._taskApiHost = taskApiHost
     this._taskApiPort = taskApiPort
     this._logger = logger
     this._initServer = initServer
-    this._taskController = taskController
+    this._taskRoutes = taskRoutes
   }
 
   start() {
@@ -19,7 +21,7 @@ class TaskApi {
 
       const routes = []
 
-      this._taskController.register(routes)
+      this._taskRoutes.register(routes)
 
       const data = {
         api: {
@@ -40,7 +42,7 @@ class TaskApi {
 
       this._initServer(data).then((server) => {
         server.start(() => {
-          console.log('API service started, listening on port ' + this._taskApiPort)
+          this._logger.info('API service started, listening on port ' + this._taskApiPort)
 
           resolve(server)
         })
@@ -49,4 +51,4 @@ class TaskApi {
   }
 }
 
-export default TaskApi
+export default TaskApiServerService

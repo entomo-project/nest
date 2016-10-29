@@ -1,11 +1,11 @@
 import ServiceContainer from './service-container'
 import winston from 'winston'
-import Logger from '../service/logger'
 import initServer from '@bmichalski/basic-hapi-api-server'
 
 class Kernel {
-  constructor() {
+  constructor(env) {
     this._serviceContainer = new ServiceContainer()
+    this._env = env
   }
 
   _configureServiceContainer() {
@@ -18,7 +18,7 @@ class Kernel {
       stringify: true
     })
 
-    this._logger = new Logger({
+    this._logger = new winston.Logger({
       transports: [
         consoleTransport
       ]
@@ -28,7 +28,11 @@ class Kernel {
       consoleTransport
     ])
 
-    this._logger.level = 'debug'
+    if ('test' === this._env) {
+      this._logger.level = 'error'
+    } else {
+      this._logger.level = 'debug'
+    }
 
     this.serviceContainer.set('app.service.init_server', initServer)
 

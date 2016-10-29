@@ -1,29 +1,30 @@
-const kernel = require('../../built/task-api/task-api-kernel').default
-const BaseApp = require('../../built/common/base-app').default
+const makeApp = require('../../../built/task-api/make-app').default
 
 const Promise = require('bluebird')
 const chai = require('chai')
 const expect = chai.expect
 const ObjectID = require('mongodb').ObjectID
+const testTimeService = require('../test-time-service')
 
-describe('Task API', () => {
+describe('Task API', function() {
+  this.slow(250)
+
   let server
   let container
   let mongoClient
 
-  before(() => {
-    const app = new BaseApp(kernel)
-
-    return app
-      .init()
+  before(function() {
+    return makeApp('test')
       .then((localContainer) => {
         container = localContainer
 
+        container.set('app.service.time', testTimeService)
+
         mongoClient = container.get('app.service.mongo.client')
-        const publicApi = container.get('app.service.task_api')
+        const serverService = container.get('app.service.server')
 
         return Promise.all([
-          publicApi.start().then((localServer) => {
+          serverService.start().then((localServer) => {
             server = localServer
           }),
           mongoClient.connect('nest').then((db) => {
@@ -37,8 +38,8 @@ describe('Task API', () => {
       })
   })
 
-  describe('POST /api/task', () => {
-    it('should create given task', (done) => {
+  describe('POST /api/task', function() {
+    it('should create given task', function(done) {
       server.inject({
         method: 'POST',
         url: '/api/task',
@@ -70,8 +71,7 @@ describe('Task API', () => {
                     'data'
                   ])
 
-                  //TODO
-                  //expect(results[0]._id).to.be.equal(results[0]._id)
+                  expect(results[0]._id).to.be.instanceOf(ObjectID)
 
                   expect(results[0].meta).to.deep.equal({ components: [ 'base', 'commandBased' ] })
 
@@ -84,8 +84,7 @@ describe('Task API', () => {
 
                   expect(results[0].data.command).to.be.equal('echo \'test\'')
                   expect(results[0].data.createdBy).to.be.equal('bmichalski')
-                  //TODO
-                  // expect(results[0].data.createdAt).to.be.equal(results[0].createdAt)
+                  expect(results[0].data.createdAt.getTime()).to.be.equal(testTimeService.getNowDate().getTime())
                   expect(results[0].data.type).to.be.equal('foobar')
 
                   done()
@@ -96,8 +95,8 @@ describe('Task API', () => {
     })
   })
 
-  describe('GET /api/task/:id', () => {
-    it('should return task with id', (done) => {
+  describe('GET /api/task/:id', function() {
+    it('should return task with id', function(done) {
       mongoClient
         .collection('nest', 'task')
         .then((collection) => {
@@ -143,7 +142,7 @@ describe('Task API', () => {
         })
     })
 
-    it('should return a 404 if task does not exists', (done) => {
+    it('should return a 404 if task does not exists', function(done) {
       const objectId = ObjectID()
 
       const url = '/api/task/' + objectId
