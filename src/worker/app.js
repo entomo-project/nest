@@ -1,4 +1,4 @@
-import kernel from './worker-kernel'
+import kernel from './kernel'
 import BaseApp from '../common/make-base-app'
 
 const app = new BaseApp(kernel)

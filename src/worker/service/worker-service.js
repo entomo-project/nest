@@ -1,131 +1,142 @@
 import assert from 'assert'
-import _ from 'lodash'
 import initServer from '@bmichalski/basic-hapi-api-server'
+import Joi from 'joi'
+import _ from 'lodash'
+import Promise from 'bluebird'
 
 class WorkerService {
   constructor(
     workerHost,
     workerPort,
     logger,
-    spawn,
-    requestPromiseFactory,
     vm,
+    shellCommandRunner,
+    schedulerNotifier,
     schedulerBaseUrl
   ) {
     this._workerHost = workerHost
     this._workerPort = workerPort
     this._logger = logger
-    this._spawn = spawn
-    this._requestPromiseFactory = requestPromiseFactory
     this._vm = vm
+    this._shellCommandRunner = shellCommandRunner
+    this._schedulerNotifier = schedulerNotifier
     this._schedulerBaseUrl = schedulerBaseUrl
   }
 
-  _makeDone(taskId, output) {
-    var doneOnce = false
+  _errorToSerializable(err) {
+    if (!_.isObject(err)) {
+      return err
+    }
 
-    return (error) => {
-      if (doneOnce) {
-        this._logger.error('Should not call "done" method more than once, returning immediately.', { taskId: taskId })
+    const plainObject = {}
+
+    if (undefined !== err.constructor && undefined !== err.constructor.name) {
+      plainObject.className = err.constructor.name
+    }
+
+    Object.getOwnPropertyNames(err).forEach((key) => {
+      plainObject[key] = err[key]
+    })
+
+    return plainObject
+  }
+
+  _doNotifyStopped(taskId, output, error) {
+    assert.notStrictEqual(undefined, taskId, 'Missing required taskId')
+    assert.notStrictEqual(undefined, output, 'Missing required output')
+    assert.notStrictEqual(undefined, output.stdOut, 'Missing required output.stdOut')
+    assert.notStrictEqual(undefined, output.stdErr, 'Missing required output.stdErr')
+    assert.notStrictEqual(undefined, output.exitCode, 'Missing required output.exitCode')
+
+    const body = {
+      output: {
+        stdOut: output.stdOut,
+        stdErr: output.stdErr,
+        exitCode: output.exitCode
+      }
+    }
+
+    const serializableError = this._errorToSerializable(error)
+
+    if (undefined !== error) {
+      body.error = serializableError
+    }
+
+    return this
+      ._schedulerNotifier
+      .notifyTaskStopped(this._schedulerBaseUrl, taskId, body)
+      .then(() => {
+        const data = {
+          taskId,
+          output
+        }
+
+        if (undefined !== error) {
+          data.error = serializableError
+        }
+
+        this._server.emit('app.notified_task_stopped', data)
+      })
+  }
+
+  _makeNotifyStopped() {
+    let calledOnce = false
+
+    return (taskId, output, error) => {
+      if (calledOnce) {
+        this._logger.error('Should not call "notifyStopped" method more than once, returning immediately.', { taskId })
 
         return
       }
 
-      doneOnce = true
+      calledOnce = true
 
-      const body = {
-        taskId: taskId,
-        output: {
-          stdOut: output.stdOut,
-          stdErr: output.stdErr,
-          exitCode: output.exitCode
-        }
-      }
-
-      function errorToPlainObject(err) {
-        const plainObject = {}
-
-        if (undefined !== err.constructor && undefined !== err.constructor.name) {
-          plainObject.className = err.constructor.name
-        }
-
-        Object.getOwnPropertyNames(err).forEach((key) => {
-          plainObject[key] = err[key]
-        })
-
-        return plainObject
-      }
-
-      if (undefined !== error && _.isObject(error)) {
-        body.error = errorToPlainObject(error)
-      }
-
-      const notifyTaskDoneOptions = {
-        method: 'PUT',
-        uri: this._schedulerBaseUrl + '/api/v1/task/stopped',
-        body: body,
-        json: true
-      }
-
-      this
-        ._requestPromiseFactory(notifyTaskDoneOptions)
-        .then(() => {
-          this
-            ._logger
-            .info('Worker done notifying nest that task is done.', { options: notifyTaskDoneOptions })
-        })
-        .catch(() => {
-          this
-            ._logger
-            .error('Worker could not notify nest that task is done.', { options: notifyTaskDoneOptions })
-        })
-        .done()
+      return this._doNotifyStopped(taskId, output, error)
     }
   }
 
-  _makeExecuteCommand(output, done) {
-    return (command, args) => {
-      try {
-        const process = this._spawn(
-          command,
-          args,
-          {
-            shell: '/bin/bash'
-          }
-        )
+  _onTaskStartNotified(taskId, jsCode) {
+    assert.notStrictEqual(undefined, taskId, 'Missing required taskId')
+    assert.notStrictEqual(undefined, jsCode, 'Missing required jsCode')
 
-        process.stdout.on('data', (data) => {
-          if (undefined === output.stdOut) {
-            output.stdOut = '' + data
-          } else {
-            output.stdOut += data
-          }
-        })
+    const output = {
+      stdOut: null,
+      stdErr: null,
+      exitCode: null
+    }
 
-        process.stderr.on('data', (data) => {
-          if (undefined === output.stdErr) {
-            output.stdErr = '' + data
-          } else {
-            output.stdErr += data
-          }
-        })
+    const notifyStopped = this._makeNotifyStopped()
 
-        return new Promise((resolve, reject) => {
-          process.on('error', (err) => {
-            done(err)
+    const handleError = (err) => {
+      notifyStopped(taskId, output, err)
+    }
 
-            reject(err)
+    const rawSandboxContext = {
+      done: () => {
+        notifyStopped(taskId, output)
+      },
+      console: console,
+      executeCommand: (args) => {
+        return this
+          ._shellCommandRunner
+          .execute(args, output)
+          .catch((err) => {
+            handleError(err)
+
+            if (err) {
+              throw err
+            }
           })
+      },
+      assert: assert
+    }
 
-          process.on('close', (exitCode) => {
-            output.exitCode = exitCode
+    this._vm.createContext(rawSandboxContext)
 
-            resolve(exitCode)
-          })
-        })
-      } catch (err) {
-        done(err)
-      }
+    try {
+      this._vm.runInContext(jsCode, rawSandboxContext)
+    } catch (err) {
+      handleError(err)
     }
   }
 
@@ -133,99 +144,58 @@ class WorkerService {
     const doHandler = (req, res) => {
       const payload = req.payload
 
-      assert.notStrictEqual(null, payload.command)
-      assert.notStrictEqual(undefined, payload.command)
-      assert.notStrictEqual('', payload.command)
-
-      assert.notStrictEqual(null, payload.taskId)
-      assert.notStrictEqual(undefined, payload.taskId)
-      assert.notStrictEqual('', payload.taskId)
-
-      const notifyTaskStartedOptions = {
-        method: 'PUT',
-        uri: this._schedulerBaseUrl + '/api/v1/task/started',
-        body: {
-          taskId: payload.taskId
-        },
-        json: true,
-        timeout: 2000
-      }
-
-      const onTaskStartNotified = () => {
-        this._logger.info('Worker done notifying nest that task has started.', { options: notifyTaskStartedOptions })
-
-        const output = {
-          stdOut: undefined,
-          stdErr: undefined,
-          exitCode: undefined
-        }
-
-        const done = this._makeDone(payload.taskId, output)
-
-        const sandbox = {
-          done: done,
-          console: console,
-          executeCommand: this._makeExecuteCommand(output, done),
-          assert: assert
-        }
-
-        this._vm.createContext(sandbox)
-
-        console.log(payload.command)
-
-        try {
-          this._vm.runInContext(payload.command, sandbox)
-        } catch (err) {
-          done(err)
-        }
-      }
+      const taskId = payload.taskId
+      const jsCode = payload.jsCode
 
       this
-        ._requestPromiseFactory(notifyTaskStartedOptions)
-        .then(onTaskStartNotified)
-        .catch((err) => {
-          if (undefined !== err) {
-            throw err
-          }
+        ._schedulerNotifier
+        .notifyTaskStarted(this._schedulerBaseUrl, taskId)
+        .then(this._onTaskStartNotified.bind(this, taskId, jsCode))
 
-          const info = { options: notifyTaskStartedOptions }
-
-          this
-            ._logger
-            .error('Worker could not notify nest that task has started.', info)
-        })
-        .done()
-
-      res({ 'status': 'success' })
+      return res({ 'status': 'success' })
     }
 
-    initServer({
-      api: {
-        name: 'Worker service',
-        version: '1',
-        hasDocumentation: true,
-        routes: [
-          {
-            method: 'POST',
-            path:'/do',
-            handler: doHandler,
-            config: {
-              description: 'Execute given task on server.'
+    return new Promise((resolve) => {
+      initServer({
+        api: {
+          name: 'Worker service',
+          version: '1',
+          hasDocumentation: true,
+          routes: [
+            {
+              method: 'POST',
+              path:'/api/do',
+              handler: doHandler,
+              config: {
+                description: 'Execute given task on server.',
+                validate: {
+                  payload: {
+                    taskId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
+                    jsCode: Joi.string().required()
+                  }
+                }
+              }
             }
-          }
-        ]
-      },
-      server: {
-        connections: [
-          {
-            host: this._workerHost,
-            port: this._workerPort
-          }
-        ]
-      }
-    }).then((server) => {
-      server.start(() => {
-        console.log('Worker service started, listening on port ' + this._workerPort)
+          ]
+        },
+        server: {
+          connections: [
+            {
+              host: this._workerHost,
+              port: this._workerPort
+            }
+          ]
+        }
+      }).then((server) => {
+        this._server = server
+
+        server.event('app.notified_task_stopped')
+
+        server.start(() => {
+          this._logger.info('Worker service started, listening on port ' + this._workerPort)
+        })
+
+        resolve(server)
       })
     })
   }
