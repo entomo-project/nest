@@ -1,41 +1,23 @@
 const makeApp = require('../../../built/task-api/make-app').default
 
-const Promise = require('bluebird')
 const chai = require('chai')
 const expect = chai.expect
 const ObjectID = require('mongodb').ObjectID
-const testTimeService = require('../test-time-service')
+const commonBefore = require('../common-before')
 
 describe('Task API', function() {
   this.slow(250)
 
   let server
-  let container
   let mongoClient
+  let testTimeService
 
   before(function() {
-    return makeApp('test')
-      .then((localContainer) => {
-        container = localContainer
-
-        container.set('app.service.time', testTimeService)
-
-        mongoClient = container.get('app.service.mongo.client')
-        const serverService = container.get('app.service.server')
-
-        return Promise.all([
-          serverService.start().then((localServer) => {
-            server = localServer
-          }),
-          mongoClient.connect('nest').then((db) => {
-            return new Promise((resolve) => {
-              db.dropDatabase().then(() => {
-                resolve()
-              })
-            })
-          })
-        ])
-      })
+    return commonBefore(makeApp).then((result) => {
+      server = result[0]
+      mongoClient = result[1]
+      testTimeService = result[2]
+    })
   })
 
   describe('POST /api/task', function() {
@@ -77,6 +59,8 @@ describe('Task API', function() {
 
                   expect(results[0].data).to.have.all.keys([
                     'command',
+                    'stdout',
+                    'stderr',
                     'createdBy',
                     'createdAt',
                     'type'
@@ -86,6 +70,8 @@ describe('Task API', function() {
                   expect(results[0].data.createdBy).to.be.equal('bmichalski')
                   expect(results[0].data.createdAt.getTime()).to.be.equal(testTimeService.getNowDate().getTime())
                   expect(results[0].data.type).to.be.equal('foobar')
+                  expect(results[0].data.stdout).to.be.equal(null)
+                  expect(results[0].data.stderr).to.be.equal(null)
 
                   done()
                 })

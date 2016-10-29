@@ -1,14 +1,15 @@
 import ServiceContainer from './service-container'
-import winston from 'winston'
-import initServer from '@bmichalski/basic-hapi-api-server'
+import ServiceDefinition from './service-definition'
 
 class Kernel {
-  constructor(env) {
+  constructor(environment) {
     this._serviceContainer = new ServiceContainer()
-    this._env = env
+    this._environment = environment
   }
 
   _configureServiceContainer() {
+    const winston = require('winston')
+
     const consoleTransport = new (winston.transports.Console)({
       colorize: true,
       prettyPrint: true,
@@ -18,35 +19,59 @@ class Kernel {
       stringify: true
     })
 
-    this._logger = new winston.Logger({
-      transports: [
-        consoleTransport
-      ]
-    })
+    this.serviceContainer.setDefinition(
+      'app.service.init_server',
+      new ServiceDefinition(() => {
+        return require('@bmichalski/basic-hapi-api-server')
+      })
+    )
 
-    this._logger.handleExceptions([
-      consoleTransport
-    ])
+    this.serviceContainer.setDefinition(
+      'app.service.logger',
+      new ServiceDefinition(() => {
+        const logger = new winston.Logger({
+          transports: [
+            consoleTransport
+          ]
+        })
 
-    if ('test' === this._env) {
-      this._logger.level = 'error'
-    } else {
-      this._logger.level = 'debug'
-    }
+        logger.handleExceptions([
+          consoleTransport
+        ])
 
-    this.serviceContainer.set('app.service.init_server', initServer)
+        if ('test' === this._environment) {
+          //Disable logging on console when in test environment
+          logger.level = false
+        } else {
+          logger.level = 'debug'
+        }
 
-    this.serviceContainer.set('app.service.logger', this._logger)
+        return logger
+      })
+    )
+
+    this.serviceContainer.setDefinition(
+      'app.service.time',
+      new ServiceDefinition(() => {
+        return require('../service/time').default
+      })
+    )
   }
 
   boot() {
     this._configureServiceContainer()
 
-    this._logger.debug('Kernel booted.')
+    this._serviceContainer
+      .get('app.service.logger')
+      .debug('Kernel booted.')
   }
 
   get serviceContainer() {
     return this._serviceContainer
+  }
+
+  get environment() {
+    return this._environment
   }
 }
 

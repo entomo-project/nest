@@ -14,9 +14,11 @@ module.exports = {
   scheduler: {
     queueSize: 4,
     mongoUrl: 'mongodb://entomo-project-nest-mongo:27017',
-    worker: {
-      baseUrl: 'http://entomo-project-nest:3003'
-    }
+    workers: [
+      {
+        baseUrl: 'http://entomo-project-nest:3003'
+      }
+    ]
   },
   publicApi: {
     mongoUrl: 'mongodb://entomo-project-nest-mongo:27017',

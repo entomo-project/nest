@@ -1,6 +1,8 @@
 exports.componentDefinition = {
   name: 'commandBasedTask',
   component: {
-    command: null
+    command: null,
+    stdout: null,
+    stderr: null
   }
 }

@@ -4,7 +4,6 @@ import MongoClient from '../common/service/mongo/mongo-client'
 import TaskBuilder from '../common/service/task/task-builder'
 import PublicApi from './service/server-service'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
-import timeService from '../common/service/time'
 import config from '../../config'
 
 class TaskApiKernel extends Kernel {
@@ -15,7 +14,6 @@ class TaskApiKernel extends Kernel {
     this.serviceContainer.setParameter('app.port', config.taskApi.port)
     this.serviceContainer.setParameter('app.mongo_url', config.taskApi.mongoUrl)
 
-    this.serviceContainer.set('app.service.time', timeService)
     this.serviceContainer.setDefinition(
       'app.service.mongo.client',
       new ServiceDefinition((container) => {
