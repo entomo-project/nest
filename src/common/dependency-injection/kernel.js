@@ -35,15 +35,15 @@ class Kernel {
           ]
         })
 
-        logger.handleExceptions([
-          consoleTransport
-        ])
-
         if ('test' === this._environment) {
           //Disable logging on console when in test environment
           logger.level = false
         } else {
           logger.level = 'debug'
+
+          logger.handleExceptions([
+            consoleTransport
+          ])
         }
 
         return logger
