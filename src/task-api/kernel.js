@@ -1,5 +1,5 @@
 import Kernel from '../common/dependency-injection/kernel'
-import TaskRoutes from './service/server-service/routes/api/v1/task-routes'
+import TaskRoutes from './service/server-service/routes/api/task-routes'
 import MongoClient from '../common/service/mongo/mongo-client'
 import TaskBuilder from '../common/service/task/task-builder'
 import PublicApi from './service/server-service'
@@ -34,7 +34,7 @@ class TaskApiKernel extends Kernel {
     )
 
     this.serviceContainer.setDefinition(
-      'app.controller.api.v1.task',
+      'app.service.server_service.routes.api.task',
       new ServiceDefinition((container) => {
         return new TaskRoutes(
           container.get('app.service.mongo.client'),
@@ -52,7 +52,7 @@ class TaskApiKernel extends Kernel {
             container.getParameter('app.port'),
             container.get('app.service.logger'),
             container.get('app.service.init_server'),
-            container.get('app.controller.api.v1.task')
+            container.get('app.service.server_service.routes.api.task')
           )
         }
       )

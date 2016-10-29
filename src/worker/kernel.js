@@ -1,10 +1,11 @@
 import Kernel from '../common/dependency-injection/kernel'
-import WorkerService from './service/worker-service'
+import WorkerService from './service/server-service'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
 import config from '../../config'
 import SchedulerNotifier from './service/scheduler-notifier'
 import ShellCommandRunner from './service/shell-command-runner'
 import SandboxService from './service/sandbox-service'
+import DoRoutes from './service/server-service/routes/api/do-routes'
 
 class WorkerKernel extends Kernel {
   _configureServiceContainer() {
@@ -59,6 +60,17 @@ class WorkerKernel extends Kernel {
       })
     )
     this.serviceContainer.setDefinition(
+      'app.service.server_service.routes.api.do',
+      new ServiceDefinition((container) => {
+        return new DoRoutes(
+          container.get('app.service.logger'),
+          container.get('app.service.sandbox'),
+          container.get('app.service.scheduler_notifier'),
+          container.getParameter('app.scheduler.base_url')
+        )
+      })
+    )
+    this.serviceContainer.setDefinition(
       'app.service.server',
       new ServiceDefinition(
         (container) => {
@@ -66,9 +78,7 @@ class WorkerKernel extends Kernel {
             container.getParameter('app.service.host'),
             container.getParameter('app.service.port'),
             container.get('app.service.logger'),
-            container.get('app.service.sandbox'),
-            container.get('app.service.scheduler_notifier'),
-            container.getParameter('app.scheduler.base_url')
+            container.get('app.service.server_service.routes.api.do')
           )
         }
       )

@@ -1,20 +1,9 @@
 import assert from 'assert'
-import initServer from '@bmichalski/basic-hapi-api-server'
+import errorSerializer from '../../../../../common/serializer/error-serializer'
 import Joi from 'joi'
-import Promise from 'bluebird'
-import errorSerializer from '../../common/serializer/error-serializer'
 
-class WorkerService {
-  constructor(
-    workerHost,
-    workerPort,
-    logger,
-    sandbox,
-    schedulerNotifier,
-    schedulerBaseUrl
-  ) {
-    this._workerHost = workerHost
-    this._workerPort = workerPort
+class DoRoutes {
+  constructor(logger, sandbox, schedulerNotifier, schedulerBaseUrl) {
     this._logger = logger
     this._sandbox = sandbox
     this._schedulerNotifier = schedulerNotifier
@@ -55,7 +44,7 @@ class WorkerService {
           data.error = serializableError
         }
 
-        this._server.emit('app.notified_task_stopped', data)
+        this._emit('app.notified_task_stopped', data)
       })
   }
 
@@ -96,65 +85,42 @@ class WorkerService {
       .catch(handleError)
   }
 
-  start() {
-    const doHandler = (req, res) => {
-      const payload = req.payload
+  doHandler(req, res) {
+    const payload = req.payload
 
-      const taskId = payload.taskId
-      const jsCode = payload.jsCode
+    const taskId = payload.taskId
+    const jsCode = payload.jsCode
 
-      this
-        ._schedulerNotifier
-        .notifyTaskStarted(this._schedulerBaseUrl, taskId)
-        .then(this._onTaskStartNotified.bind(this, taskId, jsCode))
+    this
+      ._schedulerNotifier
+      .notifyTaskStarted(this._schedulerBaseUrl, taskId)
+      .then(this._onTaskStartNotified.bind(this, taskId, jsCode))
 
-      return res({ 'status': 'success' })
-    }
+    return res({ 'status': 'success' })
+  }
 
-    return new Promise((resolve) => {
-      initServer({
-        api: {
-          name: 'Worker service',
-          version: '1',
-          hasDocumentation: true,
-          routes: [
-            {
-              method: 'POST',
-              path:'/api/do',
-              handler: doHandler,
-              config: {
-                description: 'Execute given task on server.',
-                validate: {
-                  payload: {
-                    taskId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
-                    jsCode: Joi.string().required()
-                  }
-                }
-              }
-            }
-          ]
-        },
-        server: {
-          connections: [
-            {
-              host: this._workerHost,
-              port: this._workerPort
-            }
-          ]
+  register(routes, events) {
+    routes.push({
+      method: 'POST',
+      path:'/api/do',
+      handler: this.doHandler.bind(this),
+      config: {
+        description: 'Execute given task on server.',
+        validate: {
+          payload: {
+            taskId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
+            jsCode: Joi.string().required()
+          }
         }
-      }).then((server) => {
-        this._server = server
-
-        server.event('app.notified_task_stopped')
-
-        server.start(() => {
-          this._logger.info('Worker service started, listening on port ' + this._workerPort)
-        })
-
-        resolve(server)
-      })
+      }
     })
+
+    events.push('app.notified_task_stopped')
+  }
+
+  set emit(emit) {
+    this._emit = emit
   }
 }
 
-export default WorkerService
+export default DoRoutes
