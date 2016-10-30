@@ -13,8 +13,9 @@ describe('Scheduler app', function() {
   this.slow(250)
 
   let server
-  let mongoClient
+  let db
   let serviceContainer
+  let taskCollection
 
   beforeEach(function() {
     return makeApp('test')
@@ -23,27 +24,27 @@ describe('Scheduler app', function() {
 
         serviceContainer.set('app.service.time', testTimeService)
 
-        const mongoClientService = serviceContainer.get('app.service.mongo.client')
+        const mongoDbConnectionService = serviceContainer.get('app.service.mongo.connection')
         const serverService = serviceContainer.get('app.service.server')
 
         return Promise.all([
-          new Promise((resolve) => {
-            serverService.start().then((server) => {
-              resolve(server)
-            })
+          serverService.start().then((localServer) => {
+            server = localServer
           }),
-          new Promise((resolve) => {
-            mongoClientService.connect('nest').then((db) => {
-              db.dropDatabase().then(() => {
-                resolve(mongoClientService)
-              })
-            })
+          mongoDbConnectionService.then((localDb) => {
+            db = localDb
+
+            return db.dropDatabase()
+          }),
+          serviceContainer.get('app.service.mongo.collection.task').then((localTaskCollection) => {
+            taskCollection = localTaskCollection
           })
-        ]).then((result) => {
-          server = result[0]
-          mongoClient = result[1]
-        })
+        ])
       })
+  })
+
+  afterEach(() => {
+    db.close()
   })
 
   describe('POST /api/task', function() {
@@ -52,56 +53,64 @@ describe('Scheduler app', function() {
         method: 'POST',
         url: '/api/task',
         payload: {
-          components: [ 'commandBased' ],
-          command: "echo 'test'",
-          createdBy: 'bmichalski',
-          type: 'foobar'
+          meta: {
+            components: [ 'commandBased' ]
+          },
+          data: {
+            base: {
+              createdBy: 'bmichalski',
+              type: 'foobar'
+            },
+            commandBased: {
+              command: "echo 'test'"
+            }
+          }
         }
       }).then((res) => {
         expect(res.statusCode).to.equal(200)
         expect(res.result).to.deep.equal({ status: 'success' })
 
-        mongoClient
-          .collection('nest', 'task')
-          .then((collection) => {
-            collection
-              .find({}, (err, iterator) => {
-                if (null !== err) {
-                  throw err
-                }
+        taskCollection
+          .find({})
+          .toArray()
+          .then((results) => {
+            expect(results).to.have.lengthOf(1)
 
-                iterator.toArray().then((results) => {
-                  expect(results).to.have.lengthOf(1)
+            expect(results[0]).to.have.all.keys([
+              '_id',
+              '_version',
+              'meta',
+              'data'
+            ])
 
-                  expect(results[0]).to.have.all.keys([
-                    '_id',
-                    'meta',
-                    'data'
-                  ])
+            expect(results[0]._id).to.be.instanceOf(ObjectID)
 
-                  expect(results[0]._id).to.be.instanceOf(ObjectID)
+            expect(results[0]._version).to.be.equal(0)
 
-                  expect(results[0].meta).to.deep.equal({ components: [ 'base', 'commandBased' ] })
+            expect(results[0].meta).to.deep.equal({ components: [ 'commandBased' ] })
 
-                  expect(results[0].data).to.have.all.keys([
-                    'command',
-                    'stdout',
-                    'stderr',
-                    'createdBy',
-                    'createdAt',
-                    'type'
-                  ])
+            expect(results[0].data).to.have.all.keys([
+              'base',
+              'commandBased'
+            ])
 
-                  expect(results[0].data.command).to.be.equal('echo \'test\'')
-                  expect(results[0].data.createdBy).to.be.equal('bmichalski')
-                  expect(results[0].data.createdAt.getTime()).to.be.equal(testTimeService.getNowDate().getTime())
-                  expect(results[0].data.type).to.be.equal('foobar')
-                  expect(results[0].data.stdout).to.be.equal(null)
-                  expect(results[0].data.stderr).to.be.equal(null)
+            expect(results[0].data.base).to.have.all.keys([
+              'createdBy',
+              'createdAt',
+              'type'
+            ])
 
-                  done()
-                })
-              })
+            expect(results[0].data.commandBased).to.have.all.keys([
+              'command'
+            ])
+
+            expect(results[0].data.base.createdBy).to.be.equal('bmichalski')
+            expect(results[0].data.base.createdAt.getTime()).to.be.equal(testTimeService.getNowDate().getTime())
+            expect(results[0].data.base.type).to.be.equal('foobar')
+
+            expect(results[0].data.commandBased.command).to.be.equal('echo \'test\'')
+
+            done()
           })
       })
     })
@@ -109,48 +118,38 @@ describe('Scheduler app', function() {
 
   describe('GET /api/task/:id', function() {
     it('should return task with id', function(done) {
-      mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          const objectId = ObjectID()
+      const objectId = ObjectID()
 
-          collection
-            .insertOne(
-              {
-                _id: objectId,
-                foo: 'bar'
-              },
-              (err) => {
-                if (err) {
-                  throw err
-                }
+      taskCollection
+        .insertOne({
+          _id: objectId,
+          _version: 0
+        })
+        .then(() => {
+          const url = '/api/task/' + objectId
 
-                const url = '/api/task/' + objectId
+          server.inject({
+            method: 'GET',
+            url: url
+          }).then((res) => {
+            expect(res.statusCode).to.equal(200)
+            expect(res.result).to.have.keys([
+              'status',
+              'result'
+            ])
 
-                server.inject({
-                  method: 'GET',
-                  url: url
-                }).then((res) => {
-                  expect(res.statusCode).to.equal(200)
-                  expect(res.result).to.have.keys([
-                    'status',
-                    'result'
-                  ])
+            expect(res.result.result).to.have.keys([
+              '_id',
+              '_version'
+            ])
 
-                  expect(res.result.result).to.have.keys([
-                    '_id',
-                    'foo'
-                  ])
+            expect(res.result.status).to.equal('success')
 
-                  expect(res.result.status).to.equal('success')
+            expect(res.result.result._id.toString()).to.equal(objectId.toString())
+            expect(res.result.result._version).to.equal(0)
 
-                  expect(res.result.result._id.toString()).to.equal(objectId.toString())
-                  expect(res.result.result.foo).to.equal('bar')
-
-                  done()
-                })
-              }
-            )
+            done()
+          })
         })
     })
 
@@ -171,46 +170,30 @@ describe('Scheduler app', function() {
     })
   })
 
-  describe('PUT /api/task/started', function() {
+  describe('PUT /api/task/{id}/started', function() {
     it('should mark task as started', function(done) {
       const objectId = ObjectID()
 
-      mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          collection
-            .insertOne(
-              {
-                _id: objectId
-              },
-              (err) => {
-                if (err) {
-                  throw err
-                }
+      taskCollection
+        .insertOne({
+          _id: objectId
+        })
+        .then(() => {
+          server.inject({
+            method: 'PUT',
+            url: '/api/task/' + objectId + '/started'
+          }).then((res) => {
+            expect(res.statusCode).to.equal(200)
+            expect(res.result).to.deep.equal({ status: 'success' })
 
-                server.inject({
-                  method: 'PUT',
-                  url: '/api/task/' + objectId + '/started'
-                }).then((res) => {
-                  expect(res.statusCode).to.equal(200)
-                  expect(res.result).to.deep.equal({ status: 'success' })
+            taskCollection
+              .findOne({ _id: objectId })
+              .then((result) => {
+                expect(result.data.base.startedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
 
-                  collection
-                    .findOne(
-                      { _id: objectId },
-                      (err, result) => {
-                        if (err) {
-                          throw err
-                        }
-
-                        expect(result.data.startedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
-                      }
-                    )
-
-                  done()
-                })
-              }
-            )
+                done()
+              })
+          })
         })
     })
 
@@ -218,35 +201,27 @@ describe('Scheduler app', function() {
       const objectId = ObjectID()
       const objectId2 = ObjectID()
 
-      mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          collection
-            .insertOne(
-              {
-                _id: objectId2
-              },
-              (err) => {
-                if (err) {
-                  throw err
-                }
+      taskCollection
+        .insertOne(
+          {
+            _id: objectId2
+          }
+        )
+        .then(() => {
+          server.inject({
+            method: 'PUT',
+            url: '/api/task/' + objectId + '/started'
+          }).then((res) => {
+            expect(res.statusCode).to.equal(404)
+            expect(res.result).to.deep.equal({ status: 'not_found' })
 
-                server.inject({
-                  method: 'PUT',
-                  url: '/api/task/' + objectId + '/started'
-                }).then((res) => {
-                  expect(res.statusCode).to.equal(404)
-                  expect(res.result).to.deep.equal({ status: 'not_found' })
-
-                  done()
-                })
-              }
-            )
+            done()
+          })
         })
     })
   })
 
-  describe('PUT /api/task/stopped', function() {
+  describe('PUT /api/task/{id}/stopped', function() {
     it('should mark task as stopped', function(done) {
       const objectId = ObjectID()
 
@@ -258,66 +233,53 @@ describe('Scheduler app', function() {
         baseUrl: testConfig.scheduler.workers[0].baseUrl
       })
 
-      mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          collection
-            .insertOne(
-              {
-                _id: objectId,
-                meta: {
-                  components: [
-                    'commandBased'
-                  ]
-                },
-                data: {
-                  startedAt: null,
-                  command: 'echo foobar'
-                }
-              },
-              (err) => {
-                if (err) {
-                  throw err
-                }
-
-                server.on('app.task_added_to_queue', () => {
-                  server.inject({
-                    method: 'PUT',
-                    url: '/api/task/' + objectId + '/stopped',
-                    payload: {
-                      stderr: 'err_content',
-                      stdout: 'out_content'
-                    }
-                  }).then((res) => {
-                    expect(res.statusCode).to.equal(200)
-                    expect(res.result).to.deep.equal({ status: 'success' })
-
-                    collection
-                      .findOne(
-                        { _id: objectId },
-                        (err, result) => {
-                          if (err) {
-                            throw err
-                          }
-
-                          expect(result.data.stoppedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
-                          expect(result.data.stderr).to.equal('err_content')
-                          expect(result.data.stdout).to.equal('out_content')
-                        }
-                      )
-
-                    workerNotifierMock
-                      .verify()
-
-                    workerNotifierMock.restore()
-
-                    done()
-                  })
-                })
-
-                server.emit('app.check_if_tasks')
+      taskCollection
+        .insertOne(
+          {
+            _id: objectId,
+            meta: {
+              components: [
+                'commandBased'
+              ]
+            },
+            data: {
+              commandBased: {
+                command: 'echo foobar'
               }
-            )
+            }
+          }
+        )
+        .then(() => {
+          server.on('app.task_added_to_queue', () => {
+            server.inject({
+              method: 'PUT',
+              url: '/api/task/' + objectId + '/stopped',
+              payload: {
+                stderr: 'err_content',
+                stdout: 'out_content'
+              }
+            })
+            .then((res) => {
+              expect(res.statusCode).to.equal(200)
+              expect(res.result).to.deep.equal({ status: 'success' })
+
+              taskCollection
+                .findOne({ _id: objectId })
+                .then((result) => {
+                  expect(result.data.commandBased.stoppedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
+                  expect(result.data.commandBased.stderr).to.equal('err_content')
+                  expect(result.data.commandBased.stdout).to.equal('out_content')
+
+                  workerNotifierMock.verify()
+                  
+                  workerNotifierMock.restore()
+
+                  done()
+                })
+            })
+          })
+
+          server.emit('app.check_if_tasks')
         })
     })
 
@@ -325,34 +287,26 @@ describe('Scheduler app', function() {
       const objectId = ObjectID()
       const objectId2 = ObjectID()
 
-      mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          collection
-            .insertOne(
-              {
-                _id: objectId2
-              },
-              (err) => {
-                if (err) {
-                  throw err
-                }
+      taskCollection
+        .insertOne(
+          {
+            _id: objectId2
+          }
+        )
+        .then(() => {
+          server.inject({
+            method: 'PUT',
+            url: '/api/task/' + objectId + '/stopped',
+            payload: {
+              stderr: '',
+              stdout: ''
+            }
+          }).then((res) => {
+            expect(res.statusCode).to.equal(404)
+            expect(res.result).to.deep.equal({ status: 'not_found' })
 
-                server.inject({
-                  method: 'PUT',
-                  url: '/api/task/' + objectId + '/stopped',
-                  payload: {
-                    stderr: '',
-                    stdout: ''
-                  }
-                }).then((res) => {
-                  expect(res.statusCode).to.equal(404)
-                  expect(res.result).to.deep.equal({ status: 'not_found' })
-
-                  done()
-                })
-              }
-            )
+            done()
+          })
         })
     })
   })

@@ -1,68 +1,69 @@
 import { ObjectID } from 'mongodb'
 import Boom from 'boom'
 import Joi from 'joi'
+import _ from 'lodash'
 
 class TaskRoutes {
-  constructor(mongoClient, taskBuilder) {
-    this._mongoClient = mongoClient
+  constructor(taskBuilder, taskCollection) {
     this._taskBuilder = taskBuilder
+    this._taskCollection = taskCollection
   }
 
   createTask(req, res) {
     const payload = req.payload
 
-    const payloadSchemaKeys = {
-      components: Joi.array().min(1).items(Joi.string()).required(),
-      createdBy: Joi.string().min(1).required(),
-      type: Joi.string().min(1).required()
+    const components = _.get(payload, 'meta.components', [])
+
+    const isCommandBased = components.indexOf('commandBased') !== -1
+    const hasStartAfter = components.indexOf('startAfter') !== -1
+
+    function isValid(what, schema) {
+      let hadError = false
+
+      Joi.validate(what, schema, function (err) {
+        if (err) {
+          hadError = true
+        }
+      })
+
+      return !hadError
+    }
+
+    const schema = {
+      meta: Joi.object().required().keys({
+        components: Joi.array().min(1).items(Joi.string()).required()
+      }),
+      data: {
+        base: Joi.object().required().keys({
+          type: Joi.string().min(1).required(),
+          createdBy: Joi.string().min(1).required()
+        })
+      }
+    }
+
+    if (isCommandBased) {
+      _.set(schema.data, 'commandBased.command', Joi.string().min(1).required())
+    }
+
+    if (hasStartAfter) {
+      _.set(schema.data, 'startAfter.startAfter', Joi.string().isoDate().required())
+    }
+
+    if (!isValid(payload, schema)) {
+      return res(Boom.badRequest())
     }
 
     let startAfter
 
-    const isCommandBased = payload.components.indexOf('commandBased') !== -1
-    const hasStartAfter = payload.components.indexOf('startAfter') !== -1
-
-    if (isCommandBased) {
-      payloadSchemaKeys.command = Joi.string().min(1).required()
-    }
-
     if (hasStartAfter) {
-      payloadSchemaKeys.startAfter = Joi.string().isoDate().required()
+      startAfter = new Date(payload.data.startAfter.startAfter)
     }
 
-    const payloadSchema = Joi.object().keys(payloadSchemaKeys)
+    const rawTask = this._taskBuilder.buildTask(payload)
 
-    let hadError = false
-
-    Joi.validate(payload, payloadSchema, function (err) {
-      if (err) {
-        res(Boom.badRequest())
-
-        hadError = true
-      }
-    })
-
-    if (hadError) {
-      return
-    }
-
-    if (hasStartAfter) {
-      startAfter = new Date(payload.startAfter)
-    }
-
-    const task = this._taskBuilder.buildTask({
-      components: payload.components,
-      createdBy: payload.createdBy,
-      type: payload.type,
-      command: payload.command,
-      startAfter
-    })
-
-    this._mongoClient
-      .collection('nest', 'task')
-      .then((collection) => {
-        collection
-          .insertOne(task)
+    this._taskCollection
+      .then((taskCollection) => {
+        taskCollection.insertOne(rawTask)
           .then(() => {
             res({ status: 'success' })
           })
@@ -72,13 +73,10 @@ class TaskRoutes {
   retrieveTask(req, res) {
     const objectId = ObjectID(req.params.id)
 
-    this._mongoClient
-      .collection('nest', 'task')
-      .then((collection) => {
-        collection
-          .find({ '_id': objectId })
-          .limit(1)
-          .next()
+    this._taskCollection
+      .then((taskCollection) => {
+        taskCollection
+          .findOne({ '_id': objectId })
           .then((doc) => {
             if (null === doc) {
               return res(Boom.notFound())

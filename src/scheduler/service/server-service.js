@@ -4,28 +4,29 @@ import { ObjectID } from 'mongodb'
 import Joi from 'joi'
 import Boom from 'boom'
 import _ from 'lodash'
+import assert from 'assert'
 
 class SchedulerService {
   constructor(
     schedulerHost,
     schedulerPort,
     logger,
-    mongoClient,
     timeService,
     taskRoutes,
     queueSize,
     workerNotifier,
-    workers
+    workers,
+    taskCollection
   ) {
     this._schedulerHost = schedulerHost
     this._schedulerPort = schedulerPort
     this._logger = logger
-    this._mongoClient = mongoClient
     this._timeService = timeService
     this._taskRoutes = taskRoutes
     this._queueSize = queueSize
     this._workerNotifier = workerNotifier
     this._workers = workers
+    this._taskCollection = taskCollection
 
     this._elementsInQueue = 0
     this._queue = {}
@@ -129,23 +130,21 @@ class SchedulerService {
 
     this._logger.info('Notified by worker that task has started.', { _id: taskId })
 
-    this
-      ._mongoClient
-      .collection('nest', 'task')
+    this._taskCollection
       .then((collection) => {
         collection
-          .update({ _id: ObjectID(taskId) }, { $set: { 'data.startedAt': this._timeService.getNowDate() } })
-          .then((data) => {
-            if (data.result.nModified !== 1) {
-              this._logger.error('Error marking task as started: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+        .updateOne({ _id: ObjectID(taskId) }, { $set: { 'data.base.startedAt': this._timeService.getNowDate() } })
+        .then((data) => {
+          if (data.result.nModified !== 1) {
+            this._logger.error('Error marking task as started: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
 
-              return res(Boom.notFound())
-            }
+            return res(Boom.notFound())
+          }
 
-            this._logger.info('Marked task as started.', { _id: taskId })
+          this._logger.info('Marked task as started.', { _id: taskId })
 
-            return res({ status: 'success' })
-          })
+          return res({ status: 'success' })
+        })
       })
   }
 
@@ -157,17 +156,16 @@ class SchedulerService {
 
     this._logger.info('Notified by worker that task has stopped.', { _id: taskId, stdout, stderr })
 
-    this._mongoClient
-      .collection('nest', 'task')
-      .then((collection) => {
-        collection
+    this._taskCollection
+      .then((taskCollection) => {
+        taskCollection
           .update(
             { _id: ObjectID(taskId) },
             {
               $set: {
-                'data.stoppedAt': this._timeService.getNowDate(),
-                'data.stdout': stdout,
-                'data.stderr': stderr
+                'data.commandBased.stoppedAt': this._timeService.getNowDate(),
+                'data.commandBased.stdout': stdout,
+                'data.commandBased.stderr': stderr
               }
             }
           )
@@ -188,6 +186,11 @@ class SchedulerService {
   }
 
   _addToQueueIfPossible(task) {
+    assert.notStrictEqual(undefined, task._id, 'Missing task._id.')
+    assert.notStrictEqual(undefined, task.data, 'Missing task.data.')
+    assert.notStrictEqual(undefined, task.data.commandBased, 'Missing task.data.commandBased.')
+    assert.notStrictEqual(undefined, task.data.commandBased.command, 'Missing task.data.commandBased.command.')
+
     const _id = task._id
 
     if (undefined === this._queue[_id]) {
@@ -201,7 +204,7 @@ class SchedulerService {
 
         this._workerNotifier.notify({
           taskId: _id,
-          command: task.data.command,
+          command: task.data.commandBased.command,
           //FIXME,
           baseUrl: this._workers[0].baseUrl
         })
@@ -236,39 +239,36 @@ class SchedulerService {
     this._checkingForTasks = true
 
     return new Promise((resolve) => {
-      this
-        ._mongoClient
-        .collection('nest', 'task')
-        .then((collection) => {
-          collection
-            .find({
-              'meta.components.': 'commandBased',
-              'data.startedAt': null,
-              $or: [
-                {
-                  'data.startAfter': {
-                    $exists: false
-                  }
-                },
-                {
-                  'data.startAfter': {
-                    $lte: this._timeService.getNowDate()
-                  }
+      this._taskCollection.then((taskCollection) => {
+        taskCollection
+          .find({
+            'meta.components.': 'commandBased',
+            'data.startedAt': null,
+            $or: [
+              {
+                'data.startAfter': {
+                  $exists: false
                 }
-              ]
+              },
+              {
+                'data.startAfter': {
+                  $lte: this._timeService.getNowDate()
+                }
+              }
+            ]
+          })
+          .limit(4)
+          .toArray()
+          .then((docs) => {
+            docs.forEach((doc) => {
+              this._addToQueueIfPossible(doc)
             })
-            .limit(4)
-            .toArray()
-            .then((docs) => {
-              docs.forEach((doc) => {
-                this._addToQueueIfPossible(doc)
-              })
 
-              this._checkingForTasks = false
+            this._checkingForTasks = false
 
-              resolve()
-            })
-        })
+            resolve()
+          })
+      })
     })
   }
 }
