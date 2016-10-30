@@ -12,6 +12,7 @@ class SchedulerService {
     logger,
     mongoClient,
     timeService,
+    taskRoutes,
     queueSize,
     workerNotifier,
     workers
@@ -21,6 +22,7 @@ class SchedulerService {
     this._logger = logger
     this._mongoClient = mongoClient
     this._timeService = timeService
+    this._taskRoutes = taskRoutes
     this._queueSize = queueSize
     this._workerNotifier = workerNotifier
     this._workers = workers
@@ -42,34 +44,38 @@ class SchedulerService {
       }
     }
 
+    const routes = [
+      {
+        method: 'PUT',
+        path:'/api/task/{id}/started',
+        handler: this._taskStarted.bind(this),
+        config: {
+          validate: _.extend({}, validateConfNode)
+        }
+      },
+      {
+        method: 'PUT',
+        path:'/api/task/{id}/stopped',
+        handler: this._taskStopped.bind(this),
+        config: {
+          validate: _.extend({}, validateConfNode, {
+            payload: {
+              stdout: Joi.string().required().allow(''),
+              stderr: Joi.string().required().allow('')
+            }
+          })
+        }
+      }
+    ]
+
+    this._taskRoutes.register(routes)
+
     return initServer({
       api: {
         name: 'Scheduler service',
         version: '1',
         hasDocumentation: true,
-        routes: [
-          {
-            method: 'PUT',
-            path:'/api/task/{id}/started',
-            handler: this._taskStarted.bind(this),
-            config: {
-              validate: _.extend({}, validateConfNode)
-            }
-          },
-          {
-            method: 'PUT',
-            path:'/api/task/{id}/stopped',
-            handler: this._taskStopped.bind(this),
-            config: {
-              validate: _.extend({}, validateConfNode, {
-                payload: {
-                  stdout: Joi.string().required().allow(''),
-                  stderr: Joi.string().required().allow('')
-                }
-              })
-            }
-          }
-        ]
+        routes
       },
       server: {
         connections: [

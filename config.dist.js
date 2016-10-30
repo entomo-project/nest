@@ -1,29 +1,20 @@
 module.exports = {
-  front: {
-    public: {
-      publicApi: {
-        baseUrl: 'http://dockerhost:3000'
-      }
-    }
-  },
   worker: {
+    host: 'localhost',
+    port: 3000,
     scheduler: {
-      baseUrl: 'http://entomo-project-nest:3002'
+      baseUrl: 'http://entomo-project-nest:3001'
     }
   },
   scheduler: {
+    host: 'localhost',
+    port: 3001,
     queueSize: 4,
     mongoUrl: 'mongodb://entomo-project-nest-mongo:27017',
     workers: [
       {
-        baseUrl: 'http://entomo-project-nest:3003'
+        baseUrl: 'http://entomo-project-nest:3000'
       }
-    ]
-  },
-  publicApi: {
-    mongoUrl: 'mongodb://entomo-project-nest-mongo:27017',
-    allowedOrigins: [
-      'http://dockerhost:3001'
     ]
   }
 }

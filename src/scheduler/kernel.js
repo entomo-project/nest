@@ -4,6 +4,8 @@ import MongoClient from '../common/service/mongo/mongo-client'
 import SchedulerService from './service/server-service'
 import config from '../../config'
 import WorkerNotifier from './service/worker-notifier'
+import TaskRoutes from './service/server-service/routes/api/task-routes'
+import TaskBuilder from '../common/service/task/task-builder'
 
 class SchedulerKernel extends Kernel {
   _configureServiceContainer() {
@@ -45,6 +47,29 @@ class SchedulerKernel extends Kernel {
     )
 
     this.serviceContainer.setDefinition(
+      'app.service.task.task_builder',
+      new ServiceDefinition(
+        (container) => {
+          return new TaskBuilder(
+            container.get('app.service.time')
+          )
+        }
+      )
+    )
+
+    this.serviceContainer.setDefinition(
+      'app.service.server.routes.api.task',
+      new ServiceDefinition(
+        (container) => {
+          return new TaskRoutes(
+            container.get('app.service.mongo.client'),
+            container.get('app.service.task.task_builder')
+          )
+        }
+      )
+    )
+
+    this.serviceContainer.setDefinition(
       'app.service.server',
       new ServiceDefinition(
         (container) => {
@@ -54,6 +79,7 @@ class SchedulerKernel extends Kernel {
             container.get('app.service.logger'),
             container.get('app.service.mongo.client'),
             container.get('app.service.time'),
+            container.get('app.service.server.routes.api.task'),
             container.getParameter('app.queue_size'),
             container.get('app.service.worker_notifier'),
             container.getParameter('app.workers')
