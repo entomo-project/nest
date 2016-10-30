@@ -25,21 +25,24 @@ describe('Scheduler app', function() {
         serviceContainer.set('app.service.time', testTimeService)
 
         const mongoDbConnectionService = serviceContainer.get('app.service.mongo.connection')
-        const serverService = serviceContainer.get('app.service.server')
 
-        return Promise.all([
-          serverService.start().then((localServer) => {
-            server = localServer
-          }),
-          mongoDbConnectionService.then((localDb) => {
-            db = localDb
+        return serviceContainer
+          .get('app.service.server')
+          .then((serverService) => {
+            return Promise.all([
+              serverService.start().then((localServer) => {
+                server = localServer
+              }),
+              mongoDbConnectionService.then((localDb) => {
+                db = localDb
 
-            return db.dropDatabase()
-          }),
-          serviceContainer.get('app.service.mongo.collection.task').then((localTaskCollection) => {
-            taskCollection = localTaskCollection
+                return db.dropDatabase()
+              }),
+              serviceContainer.get('app.service.mongo.collection.task').then((localTaskCollection) => {
+                taskCollection = localTaskCollection
+              })
+            ])
           })
-        ])
       })
   })
 
@@ -225,61 +228,65 @@ describe('Scheduler app', function() {
     it('should mark task as stopped', function(done) {
       const objectId = ObjectID()
 
-      const workerNotifierMock = sinon.mock(serviceContainer.get('app.service.worker_notifier'))
+      serviceContainer
+        .get('app.service.worker_notifier')
+        .then((workerNotifier) => {
+          const workerNotifierMock = sinon.mock(workerNotifier)
 
-      workerNotifierMock.expects('notify').once().withExactArgs({
-        taskId: objectId,
-        command: 'echo foobar',
-        baseUrl: testConfig.scheduler.workers[0].baseUrl
-      })
-
-      taskCollection
-        .insertOne(
-          {
-            _id: objectId,
-            meta: {
-              components: [
-                'commandBased'
-              ]
-            },
-            data: {
-              commandBased: {
-                command: 'echo foobar'
-              }
-            }
-          }
-        )
-        .then(() => {
-          server.on('app.task_added_to_queue', () => {
-            server.inject({
-              method: 'PUT',
-              url: '/api/task/' + objectId + '/stopped',
-              payload: {
-                stderr: 'err_content',
-                stdout: 'out_content'
-              }
-            })
-            .then((res) => {
-              expect(res.statusCode).to.equal(200)
-              expect(res.result).to.deep.equal({ status: 'success' })
-
-              taskCollection
-                .findOne({ _id: objectId })
-                .then((result) => {
-                  expect(result.data.commandBased.stoppedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
-                  expect(result.data.commandBased.stderr).to.equal('err_content')
-                  expect(result.data.commandBased.stdout).to.equal('out_content')
-
-                  workerNotifierMock.verify()
-                  
-                  workerNotifierMock.restore()
-
-                  done()
-                })
-            })
+          workerNotifierMock.expects('notify').once().withExactArgs({
+            taskId: objectId,
+            command: 'echo foobar',
+            baseUrl: testConfig.scheduler.workers[0].baseUrl
           })
 
-          server.emit('app.check_if_tasks')
+          taskCollection
+            .insertOne(
+              {
+                _id: objectId,
+                meta: {
+                  components: [
+                    'commandBased'
+                  ]
+                },
+                data: {
+                  commandBased: {
+                    command: 'echo foobar'
+                  }
+                }
+              }
+            )
+            .then(() => {
+              server.on('app.task_added_to_queue', () => {
+                server.inject({
+                  method: 'PUT',
+                  url: '/api/task/' + objectId + '/stopped',
+                  payload: {
+                    stderr: 'err_content',
+                    stdout: 'out_content'
+                  }
+                })
+                  .then((res) => {
+                    expect(res.statusCode).to.equal(200)
+                    expect(res.result).to.deep.equal({ status: 'success' })
+
+                    taskCollection
+                      .findOne({ _id: objectId })
+                      .then((result) => {
+                        expect(result.data.commandBased.stoppedAt.getTime()).to.equal(testTimeService.getNowDate().getTime())
+                        expect(result.data.commandBased.stderr).to.equal('err_content')
+                        expect(result.data.commandBased.stdout).to.equal('out_content')
+
+                        workerNotifierMock.verify()
+
+                        workerNotifierMock.restore()
+
+                        done()
+                      })
+                  })
+              })
+
+              server.emit('app.check_if_tasks')
+            })
         })
     })
 

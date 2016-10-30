@@ -26,25 +26,23 @@ class SchedulerKernel extends Kernel {
 
     this.serviceContainer.setDefinition(
       'app.service.worker_notifier',
-      new ServiceDefinition(
-        (container) => {
-          return new WorkerNotifier(
-            container.get('app.service.logger'),
-            container.get('app.service.request_promise_factory')
-          )
-        }
-      )
+      (container) => {
+        return [
+          WorkerNotifier,
+          container.get('app.service.logger'),
+          container.get('app.service.request_promise_factory')
+        ]
+      }
     )
 
     this.serviceContainer.setDefinition(
       'app.service.task.task_builder',
-      new ServiceDefinition(
-        (container) => {
-          return new TaskBuilder(
-            container.get('app.service.time')
-          )
-        }
-      )
+      (container) => {
+        return [
+          TaskBuilder,
+          container.get('app.service.time')
+        ]
+      }
     )
 
     this.serviceContainer.setDefinition(
@@ -60,42 +58,42 @@ class SchedulerKernel extends Kernel {
 
     this.serviceContainer.setDefinition(
       'app.service.server.routes.api.task',
-      new ServiceDefinition(
-        (container) => {
-          return new TaskRoutes(
-            container.get('app.service.task.task_builder'),
-            container.get('app.service.mongo.collection.task')
-          )
-        }
-      )
+      (container) => {
+        return [
+          TaskRoutes,
+          container.get('app.service.task.task_builder'),
+          container.get('app.service.mongo.collection.task')
+        ]
+      }
     )
 
     this.serviceContainer.setDefinition(
       'app.service.mongo.connection',
       new ServiceDefinition(
         (container) => {
-          return connect(container.getParameter('app.mongo'))
+          return connect(
+            container.getParameter('app.mongo')
+          )
         }
       )
     )
 
     this.serviceContainer.setDefinition(
       'app.service.server',
-      new ServiceDefinition(
-        (container) => {
-          return new SchedulerService(
-            container.getParameter('app.host'),
-            container.getParameter('app.port'),
-            container.get('app.service.logger'),
-            container.get('app.service.time'),
-            container.get('app.service.server.routes.api.task'),
-            container.getParameter('app.queue_size'),
-            container.get('app.service.worker_notifier'),
-            container.getParameter('app.workers'),
-            container.get('app.service.mongo.collection.task')
-          )
-        }
-      )
+      (container) => {
+        return [
+          SchedulerService,
+          container.getParameter('app.host'),
+          container.getParameter('app.port'),
+          container.get('app.service.logger'),
+          container.get('app.service.time'),
+          container.get('app.service.server.routes.api.task'),
+          container.getParameter('app.queue_size'),
+          container.get('app.service.worker_notifier'),
+          container.getParameter('app.workers'),
+          container.get('app.service.mongo.collection.task')
+        ]
+      }
     )
   }
 }

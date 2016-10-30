@@ -131,20 +131,17 @@ class SchedulerService {
     this._logger.info('Notified by worker that task has started.', { _id: taskId })
 
     this._taskCollection
-      .then((collection) => {
-        collection
-        .updateOne({ _id: ObjectID(taskId) }, { $set: { 'data.base.startedAt': this._timeService.getNowDate() } })
-        .then((data) => {
-          if (data.result.nModified !== 1) {
-            this._logger.error('Error marking task as started: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+      .updateOne({ _id: ObjectID(taskId) }, { $set: { 'data.base.startedAt': this._timeService.getNowDate() } })
+      .then((data) => {
+        if (data.result.nModified !== 1) {
+          this._logger.error('Error marking task as started: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
 
-            return res(Boom.notFound())
-          }
+          return res(Boom.notFound())
+        }
 
-          this._logger.info('Marked task as started.', { _id: taskId })
+        this._logger.info('Marked task as started.', { _id: taskId })
 
-          return res({ status: 'success' })
-        })
+        return res({ status: 'success' })
       })
   }
 
@@ -157,31 +154,28 @@ class SchedulerService {
     this._logger.info('Notified by worker that task has stopped.', { _id: taskId, stdout, stderr })
 
     this._taskCollection
-      .then((taskCollection) => {
-        taskCollection
-          .update(
-            { _id: ObjectID(taskId) },
-            {
-              $set: {
-                'data.commandBased.stoppedAt': this._timeService.getNowDate(),
-                'data.commandBased.stdout': stdout,
-                'data.commandBased.stderr': stderr
-              }
-            }
-          )
-          .then((data) => {
-            if (data.result.nModified !== 1) {
-              this._logger.error('Error marking task as stopped: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
+      .update(
+        { _id: ObjectID(taskId) },
+        {
+          $set: {
+            'data.commandBased.stoppedAt': this._timeService.getNowDate(),
+            'data.commandBased.stdout': stdout,
+            'data.commandBased.stderr': stderr
+          }
+        }
+      )
+      .then((data) => {
+        if (data.result.nModified !== 1) {
+          this._logger.error('Error marking task as stopped: expecting exactly one document to be modified, got ' + data.result.nModified + '.')
 
-              return res(Boom.notFound())
-            }
+          return res(Boom.notFound())
+        }
 
-            this._logger.info('Marked task as stopped.', { _id: taskId })
+        this._logger.info('Marked task as stopped.', { _id: taskId })
 
-            this._removeTaskFromQueue(taskId)
+        this._removeTaskFromQueue(taskId)
 
-            return res({ status: 'success' })
-          })
+        return res({ status: 'success' })
       })
   }
 
@@ -239,36 +233,34 @@ class SchedulerService {
     this._checkingForTasks = true
 
     return new Promise((resolve) => {
-      this._taskCollection.then((taskCollection) => {
-        taskCollection
-          .find({
-            'meta.components.': 'commandBased',
-            'data.startedAt': null,
-            $or: [
-              {
-                'data.startAfter': {
-                  $exists: false
-                }
-              },
-              {
-                'data.startAfter': {
-                  $lte: this._timeService.getNowDate()
-                }
+      this._taskCollection
+        .find({
+          'meta.components.': 'commandBased',
+          'data.startedAt': null,
+          $or: [
+            {
+              'data.startAfter': {
+                $exists: false
               }
-            ]
+            },
+            {
+              'data.startAfter': {
+                $lte: this._timeService.getNowDate()
+              }
+            }
+          ]
+        })
+        .limit(4)
+        .toArray()
+        .then((docs) => {
+          docs.forEach((doc) => {
+            this._addToQueueIfPossible(doc)
           })
-          .limit(4)
-          .toArray()
-          .then((docs) => {
-            docs.forEach((doc) => {
-              this._addToQueueIfPossible(doc)
-            })
 
-            this._checkingForTasks = false
+          this._checkingForTasks = false
 
-            resolve()
-          })
-      })
+          resolve()
+        })
     })
   }
 }

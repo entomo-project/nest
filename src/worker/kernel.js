@@ -35,53 +35,56 @@ class WorkerKernel extends Kernel {
     )
     this.serviceContainer.setDefinition(
       'app.service.scheduler_notifier',
-      new ServiceDefinition((container) => {
-        return new SchedulerNotifier(
+      (container) => {
+        return [
+          SchedulerNotifier,
           container.get('app.service.logger'),
           container.get('app.service.request_promise')
-        )
-      })
+        ]
+      }
     )
     this.serviceContainer.setDefinition(
       'app.service.shell_command_runner',
-      new ServiceDefinition((container) => {
-        return new ShellCommandRunner(
+      (container) => {
+        return [
+          ShellCommandRunner,
           container.get('app.service.spawn')
-        )
-      })
+        ]
+      }
     )
     this.serviceContainer.setDefinition(
       'app.service.sandbox',
-      new ServiceDefinition((container) => {
-        return new SandboxService(
+      (container) => {
+        return [
+          SandboxService,
           container.get('app.service.vm'),
           container.get('app.service.shell_command_runner')
-        )
-      })
+        ]
+      }
     )
     this.serviceContainer.setDefinition(
       'app.service.server_service.routes.api.do',
-      new ServiceDefinition((container) => {
-        return new DoRoutes(
+      (container) => {
+        return [
+          DoRoutes,
           container.get('app.service.logger'),
           container.get('app.service.sandbox'),
           container.get('app.service.scheduler_notifier'),
           container.getParameter('app.scheduler.base_url')
-        )
-      })
+        ]
+      }
     )
     this.serviceContainer.setDefinition(
       'app.service.server',
-      new ServiceDefinition(
-        (container) => {
-          return new WorkerService(
-            container.getParameter('app.service.host'),
-            container.getParameter('app.service.port'),
-            container.get('app.service.logger'),
-            container.get('app.service.server_service.routes.api.do')
-          )
-        }
-      )
+      (container) => {
+        return [
+          WorkerService,
+          container.getParameter('app.service.host'),
+          container.getParameter('app.service.port'),
+          container.get('app.service.logger'),
+          container.get('app.service.server_service.routes.api.do')
+        ]
+      }
     )
   }
 }

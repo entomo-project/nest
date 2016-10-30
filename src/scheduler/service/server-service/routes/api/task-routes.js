@@ -62,11 +62,9 @@ class TaskRoutes {
     const rawTask = this._taskBuilder.buildTask(payload)
 
     this._taskCollection
-      .then((taskCollection) => {
-        taskCollection.insertOne(rawTask)
-          .then(() => {
-            res({ status: 'success' })
-          })
+      .insertOne(rawTask)
+      .then(() => {
+        res({ status: 'success' })
       })
   }
 
@@ -74,16 +72,13 @@ class TaskRoutes {
     const objectId = ObjectID(req.params.id)
 
     this._taskCollection
-      .then((taskCollection) => {
-        taskCollection
-          .findOne({ '_id': objectId })
-          .then((doc) => {
-            if (null === doc) {
-              return res(Boom.notFound())
-            }
+      .findOne({ '_id': objectId })
+      .then((doc) => {
+        if (null === doc) {
+          return res(Boom.notFound())
+        }
 
-            return res({ result: doc })
-          })
+        return res({ result: doc })
       })
   }
 
