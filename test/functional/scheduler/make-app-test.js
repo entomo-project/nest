@@ -3,8 +3,9 @@ const makeApp = require('../../../built/scheduler/make-app').default
 const chai = require('chai')
 const expect = chai.expect
 const ObjectID = require('mongodb').ObjectID
-const commonBefore = require('../common-before')
 const sinon = require('sinon')
+const testTimeService = require('../test-time-service')
+const Promise = require('bluebird')
 
 const testConfig = require('../../../config')
 
@@ -13,16 +14,36 @@ describe('Scheduler app', function() {
 
   let server
   let mongoClient
-  let testTimeService
   let serviceContainer
 
   beforeEach(function() {
-    return commonBefore(makeApp).then((result) => {
-      server = result[0]
-      mongoClient = result[1]
-      testTimeService = result[2]
-      serviceContainer = result[3]
-    })
+    return makeApp('test')
+      .then((localServiceContainer) => {
+        serviceContainer = localServiceContainer
+
+        serviceContainer.set('app.service.time', testTimeService)
+
+        const mongoClientService = serviceContainer.get('app.service.mongo.client')
+        const serverService = serviceContainer.get('app.service.server')
+
+        return Promise.all([
+          new Promise((resolve) => {
+            serverService.start().then((server) => {
+              resolve(server)
+            })
+          }),
+          new Promise((resolve) => {
+            mongoClientService.connect('nest').then((db) => {
+              db.dropDatabase().then(() => {
+                resolve(mongoClientService)
+              })
+            })
+          })
+        ]).then((result) => {
+          server = result[0]
+          mongoClient = result[1]
+        })
+      })
   })
 
   describe('POST /api/task', function() {
