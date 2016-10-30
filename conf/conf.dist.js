@@ -1,4 +1,16 @@
 module.exports = {
+  shipit: {
+    worker: {
+      servers: [
+        'r@remote_server'
+      ]
+    },
+    scheduler: {
+      servers: [
+        'r@remote_server'
+      ]
+    }
+  },
   worker: {
     host: 'localhost',
     port: 3000,
