@@ -10,77 +10,25 @@ const testConfig = require('../../../config')
 describe('Worker app', function() {
   this.slow(250)
 
-  let server
-  let serviceContainer
+  const context = {}
 
   beforeEach(function() {
     return makeApp('test')
-      .then((localServiceContainer) => {
-        serviceContainer = localServiceContainer
+      .then((serviceContainer) => {
+        context._serviceContainer = serviceContainer
 
         return serviceContainer
           .get('app.service.server')
           .then((serverService) => {
-            return serverService.start().then((localServer) => {
-              server = localServer
+            return serverService.start().then((server) => {
+              context._server = server
             })
           })
       })
   })
 
-  describe('/api/do', function() {
-    const makeTestJsCode = (jsCode, makeExpectedNotifiedTaskStoppedResult) => {
-      return (done) => {
-        const objectId = ObjectID()
-        const strObjectId = '' + objectId
-
-        const expectedNotifiedTaskStoppedResult = makeExpectedNotifiedTaskStoppedResult(strObjectId)
-
-        serviceContainer
-          .get('app.service.scheduler_notifier')
-          .then((schedulerNotifier) => {
-            const schedulerNotifierMock = sinon.mock(schedulerNotifier)
-
-            const expectedNotifyTaskStoppedArg = { output: expectedNotifiedTaskStoppedResult.output }
-
-            if (undefined !== expectedNotifiedTaskStoppedResult.error) {
-              expectedNotifyTaskStoppedArg.error = expectedNotifiedTaskStoppedResult.error
-            }
-
-            schedulerNotifierMock
-              .expects('notifyTaskStarted')
-              .once()
-              .returns(Promise.resolve())
-              .withExactArgs(testConfig.worker.scheduler.baseUrl, strObjectId)
-            schedulerNotifierMock
-              .expects('notifyTaskStopped')
-              .once()
-              .returns(Promise.resolve())
-              .withExactArgs(testConfig.worker.scheduler.baseUrl, strObjectId, expectedNotifyTaskStoppedArg)
-
-            server
-              .inject({
-                method: 'POST',
-                url: '/api/do',
-                payload: {
-                  taskId: strObjectId,
-                  jsCode: jsCode
-                }
-              }).then((res) => {
-              expect(res.statusCode).to.be.equal(200)
-              expect(res.result).to.be.deep.equal({ status: 'success' })
-
-              server.on('app.notified_task_stopped', (result) => {
-                expect(result).to.be.deep.equal(expectedNotifiedTaskStoppedResult)
-
-                schedulerNotifierMock.verify()
-
-                done()
-              })
-            })
-          })
-      }
-    }
+  describe('POST /api/do', function() {
+    makeTestJsCode = makeTestJsCode.bind(context)
 
     it(
       'should execute jsCode',
@@ -170,3 +118,56 @@ describe('Worker app', function() {
     )
   })
 })
+
+function makeTestJsCode(jsCode, makeExpectedNotifiedTaskStoppedResult) {
+  return (done) => {
+    const objectId = ObjectID()
+    const strObjectId = '' + objectId
+
+    const expectedNotifiedTaskStoppedResult = makeExpectedNotifiedTaskStoppedResult(strObjectId)
+
+    this._serviceContainer
+      .get('app.service.scheduler_notifier')
+      .then((schedulerNotifier) => {
+        const schedulerNotifierMock = sinon.mock(schedulerNotifier)
+
+        const expectedNotifyTaskStoppedArg = { output: expectedNotifiedTaskStoppedResult.output }
+
+        if (undefined !== expectedNotifiedTaskStoppedResult.error) {
+          expectedNotifyTaskStoppedArg.error = expectedNotifiedTaskStoppedResult.error
+        }
+
+        schedulerNotifierMock
+          .expects('notifyTaskStarted')
+          .once()
+          .returns(Promise.resolve())
+          .withExactArgs(testConfig.worker.scheduler.baseUrl, strObjectId)
+        schedulerNotifierMock
+          .expects('notifyTaskStopped')
+          .once()
+          .returns(Promise.resolve())
+          .withExactArgs(testConfig.worker.scheduler.baseUrl, strObjectId, expectedNotifyTaskStoppedArg)
+
+        this._server
+          .inject({
+            method: 'POST',
+            url: '/api/do',
+            payload: {
+              taskId: strObjectId,
+              jsCode: jsCode
+            }
+          }).then((res) => {
+          expect(res.statusCode).to.be.equal(200)
+          expect(res.result).to.be.deep.equal({ status: 'success' })
+
+          this._server.on('app.notified_task_stopped', (result) => {
+            expect(result).to.be.deep.equal(expectedNotifiedTaskStoppedResult)
+
+            schedulerNotifierMock.verify()
+
+            done()
+          })
+        })
+      })
+  }
+}

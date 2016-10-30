@@ -36,7 +36,8 @@ class WorkerServerService {
             }
           ]
         }
-      }).then((server) => {
+      })
+      .then((server) => {
         this._server = server
 
         events.forEach((event) => {
