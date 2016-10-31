@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "name": "nest-scheduler",
+      "script": "./nest/current/built/scheduler/main.js",
+      "cwd": "/home/r",
+      "watch": false,
+      "instances": 1
+    }
+  ]
+}

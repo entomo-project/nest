@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "name": "nest-worker",
+      "script": "./nest/current/built/worker/main.js",
+      "cwd": "/home/r",
+      "watch": false,
+      "instances": 1
+    }
+  ]
+}
