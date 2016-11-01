@@ -59,7 +59,9 @@ class Kernel {
   }
 
   boot() {
-    this._configureServiceContainer()
+    this._conf = require('../../../conf/conf_'+this._environment)
+
+    this._configureServiceContainer(this._conf)
 
     this._serviceContainer
       .get('app.service.logger')

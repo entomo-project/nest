@@ -5,7 +5,7 @@ const ObjectID = require('mongodb').ObjectID
 const expect = chai.expect
 const sinon = require('sinon')
 const Promise = require('bluebird')
-const testConfig = require('../../../config')
+const testConfig = require('../../../conf/conf_test')
 
 describe('Worker app', function() {
   this.slow(250)

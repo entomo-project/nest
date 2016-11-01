@@ -7,7 +7,7 @@ const sinon = require('sinon')
 const testTimeService = require('../test-time-service')
 const Promise = require('bluebird')
 
-const testConfig = require('../../../config')
+const testConfig = require('../../../conf/conf_test')
 
 describe('Scheduler app', function() {
   this.slow(250)

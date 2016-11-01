@@ -1,21 +1,20 @@
 import Kernel from '../common/dependency-injection/kernel'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
 import SchedulerService from './service/server-service'
-import config from '../../config'
 import WorkerNotifier from './service/worker-notifier'
 import TaskRoutes from './service/server-service/routes/api/task-routes'
 import TaskBuilder from '../common/service/task/task-builder'
 import connect from '../mongo/connect'
 
 class SchedulerKernel extends Kernel {
-  _configureServiceContainer() {
+  _configureServiceContainer(conf) {
     super._configureServiceContainer()
 
-    this.serviceContainer.setParameter('app.host', config.scheduler.host)
-    this.serviceContainer.setParameter('app.port', config.scheduler.port)
-    this.serviceContainer.setParameter('app.queue_size', config.scheduler.queueSize)
-    this.serviceContainer.setParameter('app.mongo', config.scheduler.mongo)
-    this.serviceContainer.setParameter('app.workers', config.scheduler.workers)
+    this.serviceContainer.setParameter('app.host', conf.scheduler.host)
+    this.serviceContainer.setParameter('app.port', conf.scheduler.port)
+    this.serviceContainer.setParameter('app.queue_size', conf.scheduler.queueSize)
+    this.serviceContainer.setParameter('app.mongo', conf.scheduler.mongo)
+    this.serviceContainer.setParameter('app.workers', conf.scheduler.workers)
 
     this.serviceContainer.setDefinition(
       'app.service.request_promise_factory',

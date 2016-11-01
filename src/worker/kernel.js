@@ -1,19 +1,19 @@
 import Kernel from '../common/dependency-injection/kernel'
 import WorkerService from './service/server-service'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
-import config from '../../config'
+import config from '../../conf/conf_prod'
 import SchedulerNotifier from './service/scheduler-notifier'
 import ShellCommandRunner from './service/shell-command-runner'
 import SandboxService from './service/sandbox-service'
 import DoRoutes from './service/server-service/routes/api/do-routes'
 
 class WorkerKernel extends Kernel {
-  _configureServiceContainer() {
+  _configureServiceContainer(conf) {
     super._configureServiceContainer()
 
-    this.serviceContainer.setParameter('app.service.host', config.worker.host)
-    this.serviceContainer.setParameter('app.service.port', config.worker.port)
-    this.serviceContainer.setParameter('app.scheduler.base_url', config.worker.scheduler.baseUrl)
+    this.serviceContainer.setParameter('app.service.host', conf.worker.host)
+    this.serviceContainer.setParameter('app.service.port', conf.worker.port)
+    this.serviceContainer.setParameter('app.scheduler.base_url', conf.worker.scheduler.baseUrl)
 
     this.serviceContainer.setDefinition(
       'app.service.vm',

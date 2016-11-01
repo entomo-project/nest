@@ -1,14 +1,8 @@
-/deploy.config.json
-/config.js
+/conf/conf_prod.js
 
 /node_modules
 
 /built
 
-/dist
-
 /app/logs/*
 !/app/logs/.keepme
-
-/static/*
-!/static/.keepme

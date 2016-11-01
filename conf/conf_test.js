@@ -1,5 +1,5 @@
 const entomoProjectNestHost = 'localhost'
-const entomoProjectNestMongoHost = 'localhost'
+const entomoProjectNestMongoHost = 'entomo-project-nest-mongo'
 
 module.exports = {
   shipit: {
