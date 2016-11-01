@@ -5,7 +5,13 @@
       "script": "./nest/current/built/worker/main.js",
       "cwd": "/home/r",
       "watch": false,
-      "instances": 1
+      "instances": 1,
+      "env_production": {
+        "NODE_ENV": "production"
+      },
+      "env_development": {
+        "NODE_ENV": "development"
+      }
     }
   ]
 }
