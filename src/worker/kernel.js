@@ -1,7 +1,6 @@
 import Kernel from '../common/dependency-injection/kernel'
 import WorkerService from './service/server-service'
 import ServiceDefinition from '../common/dependency-injection/service-definition'
-import config from '../../conf/conf_prod'
 import SchedulerNotifier from './service/scheduler-notifier'
 import ShellCommandRunner from './service/shell-command-runner'
 import SandboxService from './service/sandbox-service'
