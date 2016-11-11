@@ -1,5 +1,6 @@
 const entomoProjectNestHost = 'localhost'
 const entomoProjectNestMongoHost = 'entomo-project-nest-mongo'
+const Fs = require('fs');
 
 module.exports = {
   shipit: {
@@ -15,15 +16,19 @@ module.exports = {
     }
   },
   worker: {
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 3000,
     scheduler: {
       baseUrl: 'http://' + entomoProjectNestHost + ':3001'
     }
   },
   scheduler: {
-    host: 'localhost',
-    port: 3001,
+    host: '0.0.0.0',
+    https: {
+      port: 3001,
+      key: Fs.readFileSync(__dirname + '/../../temp2/server/privkey.pem'),
+      cert: Fs.readFileSync(__dirname + '/../../temp2/server/fullchain.pem')
+    },
     queueSize: 4,
     mongo: {
       host: entomoProjectNestMongoHost,

@@ -9,7 +9,7 @@ import assert from 'assert'
 class SchedulerService {
   constructor(
     schedulerHost,
-    schedulerPort,
+    schedulerHttps,
     logger,
     timeService,
     taskRoutes,
@@ -19,7 +19,7 @@ class SchedulerService {
     taskCollection
   ) {
     this._schedulerHost = schedulerHost
-    this._schedulerPort = schedulerPort
+    this._schedulerHttps = schedulerHttps
     this._logger = logger
     this._timeService = timeService
     this._taskRoutes = taskRoutes
@@ -82,7 +82,11 @@ class SchedulerService {
         connections: [
           {
             host: this._schedulerHost,
-            port: this._schedulerPort
+            port: this._schedulerHttps.port,
+            tls: {
+              key: this._schedulerHttps.key,
+              cert: this._schedulerHttps.cert
+            }
           }
         ]
       }
@@ -115,7 +119,7 @@ class SchedulerService {
         server.on('app.check_if_tasks', this._main.bind(this))
 
         server.start(() => {
-          this._logger.info('Scheduler service started, listening on port ' + this._schedulerPort)
+          this._logger.info('Scheduler service started, listening on port ' + this._schedulerHttps.port)
 
           this._main().then(scheduleMain)
 

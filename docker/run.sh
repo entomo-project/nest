@@ -24,7 +24,7 @@ docker run \
   -p 3003:3003 \
   -p 2222:22 \
   --volumes-from entomo-project-nest-data \
-  -v $DIR/..:/home/r/nest \
+  -v $DIR/..:/home/r/nest_src \
   --net dev \
   --net-alias entomo-project-nest \
   --name entomo-project-nest \

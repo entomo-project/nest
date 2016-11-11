@@ -19,8 +19,13 @@ RUN \
   mv /root/node-v6.9.1-linux-x64 /opt/node/current
 
 RUN \
+  /opt/node/current/bin/node /opt/node/current/lib/node_modules/npm install -g pm2
+
+RUN \
+  echo PATH="/opt/node/current/bin:$PATH" >> /etc/environment
+
+RUN \
   adduser --disabled-password --gecos '' r && \
   adduser r sudo && \
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-  echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc && \
-  echo PATH="/opt/node/current/bin:\$PATH" >> /home/r/.bashrc
+  echo PATH="/opt/node/current/bin:\$PATH" >> /root/.bashrc

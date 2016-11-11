@@ -8,4 +8,4 @@ ssh \
   -o UserKnownHostsFile=/dev/null \
   -t \
   r@localhost \
-  'cd /home/r/nest && bash'
+  'cd /home/r/nest_src && bash'

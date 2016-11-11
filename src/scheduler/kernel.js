@@ -11,7 +11,7 @@ class SchedulerKernel extends Kernel {
     super._configureServiceContainer()
 
     this.serviceContainer.setParameter('app.host', conf.scheduler.host)
-    this.serviceContainer.setParameter('app.port', conf.scheduler.port)
+    this.serviceContainer.setParameter('app.https', conf.scheduler.https)
     this.serviceContainer.setParameter('app.queue_size', conf.scheduler.queueSize)
     this.serviceContainer.setParameter('app.mongo', conf.scheduler.mongo)
     this.serviceContainer.setParameter('app.workers', conf.scheduler.workers)
@@ -83,7 +83,7 @@ class SchedulerKernel extends Kernel {
         return [
           SchedulerService,
           container.getParameter('app.host'),
-          container.getParameter('app.port'),
+          container.getParameter('app.https'),
           container.get('app.service.logger'),
           container.get('app.service.time'),
           container.get('app.service.server.routes.api.task'),
