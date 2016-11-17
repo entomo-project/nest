@@ -24,30 +24,24 @@ describe('Scheduler app', function() {
 
         serviceContainer.set('app.service.time', testTimeService)
 
-        const mongoDbConnectionService = serviceContainer.get('app.service.mongo.connection')
-
         return serviceContainer
-          .get('app.service.server')
-          .then((serverService) => {
+          .get('app.service.server', 'app.service.mongo.db', 'app.service.mongo.collection.task')
+          .then(([serverService, localDb, localTaskCollection]) => {
+            db = localDb
+            taskCollection = localTaskCollection
+
             return Promise.all([
               serverService.start().then((localServer) => {
                 server = localServer
               }),
-              mongoDbConnectionService.then((localDb) => {
-                db = localDb
-
-                return db.dropDatabase()
-              }),
-              serviceContainer.get('app.service.mongo.collection.task').then((localTaskCollection) => {
-                taskCollection = localTaskCollection
-              })
+              db.dropDatabase()
             ])
           })
       })
   })
 
   afterEach(() => {
-    db.close()
+    return db.close()
   })
 
   describe('POST /api/task', function() {
@@ -230,7 +224,7 @@ describe('Scheduler app', function() {
 
       serviceContainer
         .get('app.service.worker_notifier')
-        .then((workerNotifier) => {
+        .then(([workerNotifier]) => {
           const workerNotifierMock = sinon.mock(workerNotifier)
 
           workerNotifierMock.expects('notify').once().withExactArgs({

@@ -1,10 +1,6 @@
-import Kernel from '../common/dependency-injection/kernel'
-import WorkerService from './service/server-service'
-import ServiceDefinition from '../common/dependency-injection/service-definition'
-import SchedulerNotifier from './service/scheduler-notifier'
-import ShellCommandRunner from './service/shell-command-runner'
-import SandboxService from './service/sandbox-service'
-import DoRoutes from './service/server-service/routes/api/do-routes'
+import {ObjectLoader} from '@bmichalski/disl'
+
+import Kernel from '../common/kernel'
 
 class WorkerKernel extends Kernel {
   _configureServiceContainer(conf) {
@@ -14,77 +10,54 @@ class WorkerKernel extends Kernel {
     this.serviceContainer.setParameter('app.service.port', conf.worker.port)
     this.serviceContainer.setParameter('app.scheduler.base_url', conf.worker.scheduler.baseUrl)
 
-    this.serviceContainer.setDefinition(
-      'app.service.vm',
-      new ServiceDefinition(() => {
-        return require('vm')
-      })
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.spawn',
-      new ServiceDefinition(() => {
-        return require('child_process').spawn
-      })
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.request_promise',
-      new ServiceDefinition(() => {
-        return require('request-promise')
-      })
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.scheduler_notifier',
-      (container) => {
-        return [
-          SchedulerNotifier,
-          container.get('app.service.logger'),
-          container.get('app.service.request_promise')
-        ]
+    const assoc = {
+      'app.service.vm': 'vm',
+      'app.service.spawn_factory': '../common/service/factory/spawn'
+    }
+
+    const classAssoc = {
+      worker_service: './service/server-service',
+      scheduler_notifier: './service/scheduler-notifier',
+      shell_command_runner: './service/shell-command-runner',
+      sandbox_service: './service/sandbox-service',
+      do_routes: './service/server-service/routes/api/do-routes'
+    }
+
+    this.serviceContainer.registerInstanceLocator((identifier) => {
+      if (undefined === assoc[identifier]) {
+        return
       }
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.shell_command_runner',
-      (container) => {
-        return [
-          ShellCommandRunner,
-          container.get('app.service.spawn')
-        ]
+
+      const moduleName = assoc[identifier]
+
+      const module = require(moduleName)
+
+      if (undefined !== module.default) {
+        return module.default
       }
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.sandbox',
-      (container) => {
-        return [
-          SandboxService,
-          container.get('app.service.vm'),
-          container.get('app.service.shell_command_runner')
-        ]
+
+      return module
+    })
+
+    this.serviceContainer.registerClassLocator((identifier) => {
+      if (undefined === classAssoc[identifier]) {
+        return
       }
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.server_service.routes.api.do',
-      (container) => {
-        return [
-          DoRoutes,
-          container.get('app.service.logger'),
-          container.get('app.service.sandbox'),
-          container.get('app.service.scheduler_notifier'),
-          container.getParameter('app.scheduler.base_url')
-        ]
+
+      const moduleName = classAssoc[identifier]
+
+      const module = require(moduleName)
+
+      if (undefined !== module.default) {
+        return module.default
       }
-    )
-    this.serviceContainer.setDefinition(
-      'app.service.server',
-      (container) => {
-        return [
-          WorkerService,
-          container.getParameter('app.service.host'),
-          container.getParameter('app.service.port'),
-          container.get('app.service.logger'),
-          container.get('app.service.server_service.routes.api.do')
-        ]
-      }
-    )
+
+      return module
+    })
+
+    const loader = new ObjectLoader(this.serviceContainer)
+
+    loader.load(require('./services').default)
   }
 }
 

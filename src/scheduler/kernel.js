@@ -1,10 +1,6 @@
-import Kernel from '../common/dependency-injection/kernel'
-import ServiceDefinition from '../common/dependency-injection/service-definition'
-import SchedulerService from './service/server-service'
-import WorkerNotifier from './service/worker-notifier'
-import TaskRoutes from './service/server-service/routes/api/task-routes'
-import TaskBuilder from '../common/service/task/task-builder'
-import connect from '../mongo/connect'
+import {ObjectLoader} from '@bmichalski/disl'
+
+import Kernel from '../common/kernel'
 
 class SchedulerKernel extends Kernel {
   _configureServiceContainer(conf) {
@@ -16,84 +12,53 @@ class SchedulerKernel extends Kernel {
     this.serviceContainer.setParameter('app.mongo', conf.scheduler.mongo)
     this.serviceContainer.setParameter('app.workers', conf.scheduler.workers)
 
-    this.serviceContainer.setDefinition(
-      'app.service.request_promise_factory',
-      new ServiceDefinition(() => {
-        return require('request-promise')
-      })
-    )
+    const assoc = {
+      'app.service.factory.mongo.db': '../common/service/factory/mongo/db',
+      'app.service.factory.mongo.collection.task': '../common/service/factory/mongo/collection/task'
+    }
 
-    this.serviceContainer.setDefinition(
-      'app.service.worker_notifier',
-      (container) => {
-        return [
-          WorkerNotifier,
-          container.get('app.service.logger'),
-          container.get('app.service.request_promise_factory')
-        ]
+    const classAssoc = {
+      'worker_notifier': './service/worker-notifier',
+      'scheduler_service': './service/server-service',
+      'server_routes_api_task': './service/server-service/routes/api/task-routes',
+      'task_builder': '../common/service/task/task-builder'
+    }
+
+    this.serviceContainer.registerInstanceLocator((identifier) => {
+      if (undefined === assoc[identifier]) {
+        return
       }
-    )
 
-    this.serviceContainer.setDefinition(
-      'app.service.task.task_builder',
-      (container) => {
-        return [
-          TaskBuilder,
-          container.get('app.service.time')
-        ]
+      const moduleName = assoc[identifier]
+
+      const module = require(moduleName)
+
+      if (undefined !== module.default) {
+        return module.default
       }
-    )
 
-    this.serviceContainer.setDefinition(
-      'app.service.mongo.collection.task',
-      new ServiceDefinition(
-        (container) => {
-          return container.get('app.service.mongo.connection').then((db) => {
-            return db.collection('task')
-          })
-        }
-      )
-    )
+      return module
+    })
 
-    this.serviceContainer.setDefinition(
-      'app.service.server.routes.api.task',
-      (container) => {
-        return [
-          TaskRoutes,
-          container.get('app.service.task.task_builder'),
-          container.get('app.service.mongo.collection.task')
-        ]
+    this.serviceContainer.registerClassLocator((identifier) => {
+      if (undefined === classAssoc[identifier]) {
+        return
       }
-    )
 
-    this.serviceContainer.setDefinition(
-      'app.service.mongo.connection',
-      new ServiceDefinition(
-        (container) => {
-          return connect(
-            container.getParameter('app.mongo')
-          )
-        }
-      )
-    )
+      const moduleName = classAssoc[identifier]
 
-    this.serviceContainer.setDefinition(
-      'app.service.server',
-      (container) => {
-        return [
-          SchedulerService,
-          container.getParameter('app.host'),
-          container.getParameter('app.https'),
-          container.get('app.service.logger'),
-          container.get('app.service.time'),
-          container.get('app.service.server.routes.api.task'),
-          container.getParameter('app.queue_size'),
-          container.get('app.service.worker_notifier'),
-          container.getParameter('app.workers'),
-          container.get('app.service.mongo.collection.task')
-        ]
+      const module = require(moduleName)
+
+      if (undefined !== module.default) {
+        return module.default
       }
-    )
+
+      return module
+    })
+
+    const loader = new ObjectLoader(this._serviceContainer)
+
+    loader.load(require('./services').default)
   }
 }
 

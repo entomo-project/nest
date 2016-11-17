@@ -19,7 +19,7 @@ describe('Worker app', function() {
 
         return serviceContainer
           .get('app.service.server')
-          .then((serverService) => {
+          .then(([serverService]) => {
             return serverService.start().then((server) => {
               context._server = server
             })
@@ -128,7 +128,7 @@ function makeTestJsCode(jsCode, makeExpectedNotifiedTaskStoppedResult) {
 
     this._serviceContainer
       .get('app.service.scheduler_notifier')
-      .then((schedulerNotifier) => {
+      .then(([schedulerNotifier]) => {
         const schedulerNotifierMock = sinon.mock(schedulerNotifier)
 
         const expectedNotifyTaskStoppedArg = { output: expectedNotifiedTaskStoppedResult.output }

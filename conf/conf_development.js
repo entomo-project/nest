@@ -1,6 +1,6 @@
 const entomoProjectNestHost = 'localhost'
 const entomoProjectNestMongoHost = 'entomo-project-nest-mongo'
-const Fs = require('fs');
+const Fs = require('fs')
 
 module.exports = {
   shipit: {

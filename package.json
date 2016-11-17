@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@bmichalski/basic-hapi-api-server": "git://github.com/bmichalski-js/basic-hapi-api-server.git#experimental",
+    "@bmichalski/disl": "git://github.com/bmichalski-js/disl#develop",
     "bluebird": "^3.4.1",
     "lodash": "^4.14.2",
     "mongodb": "^2.2.10",
